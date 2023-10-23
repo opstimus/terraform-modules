@@ -1,1 +1,1 @@
-# terraform-module-template
+# terraform-aws-s3-bucket
