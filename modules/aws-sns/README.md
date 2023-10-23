@@ -1,1 +1,2 @@
-# terraform-module-template
+# terraform-aws-sns
+
