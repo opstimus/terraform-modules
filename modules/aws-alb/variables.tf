@@ -28,5 +28,6 @@ variable "certificate_arn" {
 
 variable "idle_timeout" {
   type        = number
-  description = "60, 120, 180"
+  description = "In seconds upto 4000"
+  default     = 60
 }
