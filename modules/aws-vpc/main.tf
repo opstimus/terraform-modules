@@ -168,57 +168,66 @@ data "aws_ami" "amazon_linux_2" {
 }
 
 resource "aws_instance" "nat_1" {
-  count                  = var.nat == "instance" ? 1 : 0
-  ami                    = data.aws_ami.amazon_linux_2.id
-  instance_type          = var.nat_instance_type
-  vpc_security_group_ids = [aws_security_group.nat_instance[0].id]
-  source_dest_check      = false
-  subnet_id              = aws_subnet.public_1.id
-  user_data              = <<EOF
+  count                       = var.nat == "instance" ? 1 : 0
+  ami                         = data.aws_ami.amazon_linux_2.id
+  instance_type               = var.nat_instance_type
+  vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
+  source_dest_check           = false
+  subnet_id                   = aws_subnet.public_1.id
+  user_data_replace_on_change = true
+  user_data = trimspace(
+    <<EOF
     #!/bin/bash
     sudo sysctl -w net.ipv4.ip_forward=1
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     sudo yum install iptables-services
     sudo service iptables save
   EOF
+  )
   tags = {
     "Name" = "${var.project}-${var.environment}-nat-instance-1"
   }
 }
 
 resource "aws_instance" "nat_2" {
-  count                  = var.nat == "instance" ? 1 : 0
-  ami                    = data.aws_ami.amazon_linux_2.id
-  instance_type          = var.nat_instance_type
-  vpc_security_group_ids = [aws_security_group.nat_instance[0].id]
-  source_dest_check      = false
-  subnet_id              = aws_subnet.public_2.id
-  user_data              = <<EOF
+  count                       = var.nat == "instance" ? 1 : 0
+  ami                         = data.aws_ami.amazon_linux_2.id
+  instance_type               = var.nat_instance_type
+  vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
+  source_dest_check           = false
+  subnet_id                   = aws_subnet.public_2.id
+  user_data_replace_on_change = true
+  user_data = trimspace(
+    <<EOF
     #!/bin/bash
     sudo sysctl -w net.ipv4.ip_forward=1
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     sudo yum install iptables-services
     sudo service iptables save
   EOF
+  )
   tags = {
     "Name" = "${var.project}-${var.environment}-nat-instance-2"
   }
 }
 
 resource "aws_instance" "nat_3" {
-  count                  = var.nat == "instance" ? 1 : 0
-  ami                    = data.aws_ami.amazon_linux_2.id
-  instance_type          = var.nat_instance_type
-  vpc_security_group_ids = [aws_security_group.nat_instance[0].id]
-  source_dest_check      = false
-  subnet_id              = aws_subnet.public_3.id
-  user_data              = <<EOF
+  count                       = var.nat == "instance" ? 1 : 0
+  ami                         = data.aws_ami.amazon_linux_2.id
+  instance_type               = var.nat_instance_type
+  vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
+  source_dest_check           = false
+  subnet_id                   = aws_subnet.public_3.id
+  user_data_replace_on_change = true
+  user_data = trimspace(
+    <<EOF
     #!/bin/bash
     sudo sysctl -w net.ipv4.ip_forward=1
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     sudo yum install iptables-services
     sudo service iptables save
   EOF
+  )
   tags = {
     "Name" = "${var.project}-${var.environment}-nat-instance-3"
   }
