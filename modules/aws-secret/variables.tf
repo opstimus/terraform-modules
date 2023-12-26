@@ -12,3 +12,8 @@ variable "name" {
   type        = string
   description = "Secret name | i.e mail-password"
 }
+
+variable "secret_string" {
+  type    = string
+  default = null
+}
