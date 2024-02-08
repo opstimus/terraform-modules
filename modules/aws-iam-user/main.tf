@@ -9,9 +9,9 @@ resource "aws_iam_user_policy" "main" {
 }
 
 resource "aws_secretsmanager_secret" "access_key" {
-  name = "${var.project}-${var.environment}-iam-access-key"
+  name = "${var.project}-${var.environment}-${var.name}-iam-access-key"
 }
 
 resource "aws_secretsmanager_secret" "secret_key" {
-  name = "${var.project}-${var.environment}-iam-secret-key"
+  name = "${var.project}-${var.environment}-${var.name}-iam-secret-key"
 }
