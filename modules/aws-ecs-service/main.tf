@@ -1,11 +1,13 @@
 resource "aws_ecs_service" "main" {
-  name                   = "${var.project}-${var.environment}-${var.service}"
-  cluster                = var.cluster_arn
-  task_definition        = var.task_definition
-  desired_count          = var.desired_count
-  launch_type            = "FARGATE"
-  enable_execute_command = true
-  wait_for_steady_state  = true
+  name                               = "${var.project}-${var.environment}-${var.service}"
+  cluster                            = var.cluster_arn
+  task_definition                    = var.task_definition
+  desired_count                      = var.desired_count
+  launch_type                        = "FARGATE"
+  enable_execute_command             = true
+  wait_for_steady_state              = true
+  deployment_maximum_percent         = var.deployment_maximum_percent
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
 
   load_balancer {
     target_group_arn = var.target_group_arn
