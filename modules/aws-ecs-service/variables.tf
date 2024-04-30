@@ -82,6 +82,11 @@ variable "deployment_maximum_percent" {
   default = 200
 }
 
+variable "capacity_provider_fargate_base" {
+  type    = number
+  default = 1
+}
+
 variable "capacity_provider_fargate_weight" {
   type    = number
   default = 1

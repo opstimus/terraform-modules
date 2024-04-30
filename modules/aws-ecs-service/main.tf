@@ -36,6 +36,7 @@ resource "aws_ecs_service" "main" {
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
     weight            = var.capacity_provider_fargate_weight
+    base              = var.capacity_provider_fargate_base
   }
 }
 
