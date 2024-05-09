@@ -72,7 +72,7 @@ variable "backup_retention_period" {
 
 variable "storage_encrypted" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "kms_key_id" {
@@ -127,4 +127,53 @@ variable "enable_cpu_alarm" {
   type        = bool
   description = "Enable CPU alarm"
   default     = false
+}
+
+variable "enable_rds_proxy" {
+  type        = bool
+  description = "Enable RDS Proxy"
+  default     = false
+}
+
+variable "debug_logging" {
+  type    = bool
+  default = false
+}
+
+variable "engine_family" {
+  type        = string
+  description = "Engine Family i.e: MYSQL"
+  default     = null
+}
+
+variable "require_tls" {
+  type    = bool
+  default = false
+}
+
+variable "port" {
+  type        = number
+  description = "SQL Port"
+  default     = 0
+}
+
+variable "connection_borrow_timeout" {
+  type    = number
+  default = 120
+}
+
+variable "init_query" {
+  type        = string
+  description = "SQL statements to set up the initial session state for each connection"
+  default     = null
+}
+
+variable "max_connections_percent" {
+  type    = number
+  default = 80
+}
+
+variable "max_idle_connections_percent" {
+  type    = number
+  default = 50
 }

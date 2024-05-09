@@ -107,17 +107,18 @@ resource "aws_rds_cluster" "main" {
 }
 
 resource "aws_rds_cluster_instance" "cluster_instances" {
-  count                        = var.instance_count
-  apply_immediately            = true
-  identifier                   = "${var.project}-${var.environment}-instance-${count.index}"
-  cluster_identifier           = aws_rds_cluster.main.id
-  engine                       = aws_rds_cluster.main.engine
-  engine_version               = aws_rds_cluster.main.engine_version
-  instance_class               = var.instancetype
-  db_subnet_group_name         = aws_db_subnet_group.main.name
-  db_parameter_group_name      = length(aws_rds_cluster_parameter_group.main) > 0 ? aws_rds_cluster_parameter_group.main[0].name : "default.${var.parameter_group_family}"
-  auto_minor_version_upgrade   = false
-  performance_insights_enabled = var.performance_insights_enabled
+  count                           = var.instance_count
+  apply_immediately               = true
+  identifier                      = "${var.project}-${var.environment}-instance-${count.index}"
+  cluster_identifier              = aws_rds_cluster.main.id
+  engine                          = aws_rds_cluster.main.engine
+  engine_version                  = aws_rds_cluster.main.engine_version
+  instance_class                  = var.instancetype
+  db_subnet_group_name            = aws_db_subnet_group.main.name
+  db_parameter_group_name         = length(aws_rds_cluster_parameter_group.main) > 0 ? aws_rds_cluster_parameter_group.main[0].name : "default.${var.parameter_group_family}"
+  auto_minor_version_upgrade      = false
+  performance_insights_enabled    = var.performance_insights_enabled
+  performance_insights_kms_key_id = var.performance_insights_enabled ? var.kms_key_id : null
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
@@ -158,4 +159,128 @@ resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
   dimensions = {
     DBInstanceIdentifier = aws_rds_cluster.main.id
   }
+}
+
+resource "aws_secretsmanager_secret" "rds_proxy" {
+  count = var.enable_rds_proxy ? 1 : 0
+  name  = "${var.project}-${var.environment}-db-rds-proxy"
+}
+
+resource "aws_secretsmanager_secret_version" "rds_proxy" {
+  count     = var.enable_rds_proxy ? 1 : 0
+  secret_id = aws_secretsmanager_secret.rds_proxy[0].id
+  secret_string = jsonencode({
+    username            = aws_rds_cluster.main.master_username
+    password            = aws_rds_cluster.main.master_password
+    engine              = var.engine_family
+    host                = aws_rds_cluster.main.endpoint
+    port                = var.port
+    dbClusterIdentifier = aws_rds_cluster.main.cluster_identifier
+  })
+}
+
+data "aws_kms_key" "rds_proxy" {
+  key_id = "alias/aws/secretsmanager"
+}
+
+resource "aws_iam_role" "rds_proxy" {
+  count = var.enable_rds_proxy ? 1 : 0
+  name  = "${var.project}-${var.environment}-db-rds-proxy"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "rds.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "rds_proxy" {
+  count = var.enable_rds_proxy ? 1 : 0
+  name  = "${var.project}-${var.environment}-db-rds-proxy"
+  role  = aws_iam_role.rds_proxy[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid = "GetSecretValue",
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ],
+        Effect = "Allow"
+        Resource = [
+          aws_secretsmanager_secret.rds_proxy[0].arn
+        ]
+      },
+      {
+        Sid = "DecryptSecretValue",
+        Action = [
+          "kms:Decrypt"
+        ],
+        Effect = "Allow"
+        Resource = [
+          data.aws_kms_key.rds_proxy.arn
+        ],
+        Condition = {
+          "StringEquals" = {
+            "kms:ViaService" = "secretsmanager.ap-southeast-1.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_db_proxy" "main" {
+  count                  = var.enable_rds_proxy ? 1 : 0
+  name                   = "${var.project}-${var.environment}-db"
+  debug_logging          = var.debug_logging
+  engine_family          = var.engine_family
+  idle_client_timeout    = 1800
+  require_tls            = var.require_tls
+  role_arn               = aws_iam_role.rds_proxy[0].arn
+  vpc_security_group_ids = [aws_security_group.db.id]
+  vpc_subnet_ids         = var.private_subnet_ids
+
+  auth {
+    auth_scheme = "SECRETS"
+    description = "Native Authentication"
+    iam_auth    = "DISABLED"
+    secret_arn  = aws_secretsmanager_secret.rds_proxy[0].arn
+  }
+}
+
+resource "aws_db_proxy_default_target_group" "main" {
+  count         = var.enable_rds_proxy ? 1 : 0
+  db_proxy_name = aws_db_proxy.main[0].name
+
+  connection_pool_config {
+    connection_borrow_timeout    = var.connection_borrow_timeout
+    init_query                   = var.init_query
+    max_connections_percent      = var.max_connections_percent
+    max_idle_connections_percent = var.max_idle_connections_percent
+    session_pinning_filters      = ["EXCLUDE_VARIABLE_SETS"]
+  }
+}
+
+resource "aws_db_proxy_target" "main" {
+  count                 = var.enable_rds_proxy ? 1 : 0
+  db_cluster_identifier = aws_rds_cluster.main.cluster_identifier
+  db_proxy_name         = aws_db_proxy.main[0].name
+  target_group_name     = aws_db_proxy_default_target_group.main[0].name
+}
+
+resource "aws_db_proxy_endpoint" "main" {
+  count                  = var.enable_rds_proxy ? 1 : 0
+  db_proxy_name          = aws_db_proxy.main[0].name
+  db_proxy_endpoint_name = "${var.project}-${var.environment}-readonly"
+  vpc_subnet_ids         = var.private_subnet_ids
+  vpc_security_group_ids = [aws_security_group.db.id]
+  target_role            = "READ_ONLY"
 }
