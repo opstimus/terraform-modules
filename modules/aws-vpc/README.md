@@ -48,11 +48,11 @@ This Terraform module creates an AWS Virtual Private Cloud (VPC) with public and
 
 ```hcl
 module "vpc" {
-  source             = "s3::https://s3.amazonaws.com/ot-turbo-artifacts/tf/modules/aws/dev/vpc.zip"
+  source             = "github.com/opstimus/terraform-aws-vpc?ref=v1.0.1"
 
   project            = "my_project"
   environment        = "my_environment"
-  nat                = "gateway"
+  nat                = "instance"
   nat_instance_type  = "t3.nano"
   vpc_cidr           = "10.0.0.0/16"
   public_cidr_1      = "10.0.1.0/24"
