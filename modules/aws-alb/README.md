@@ -1,52 +1,57 @@
-# AWS Application Load Balancer (ALB)
+# ALB with Security Group Module
 
 ## Description
 
-This Terraform module creates an Application Load Balancer (ALB), an associated security group and ALB listeners for HTTP and HTTPS protocols.
-
-It also stores the ARN of the HTTPS listener in an SSM parameter.
+This Terraform module creates an Application Load Balancer (ALB) along with a security group in AWS. It also configures HTTP to HTTPS redirection, default SSL termination on the ALB using an ACM certificate, and outputs the DNS name of the ALB. Additionally, it stores the HTTPS listener ARN in AWS Systems Manager (SSM) Parameter Store.
 
 ## Requirements
 
-| Name | Version |
-|------|---------|
+| Name      | Version  |
+|-----------|----------|
 | terraform | >= 1.3.0 |
-| aws | ~> 4.0 |
+| aws       | >= 4.0   |
+| external  | >= 2.2.0 |
+| random    | >= 3.4.0 |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| aws | ~> 4.0 |
+| Name | Version  |
+|------|----------|
+| aws  | >= 4.0   |
+| external | >= 2.2.0 |
+| random   | >= 3.4.0 |
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| project | The project name. | `string` | - | yes |
-| environment | The environment name. | `string` | - | yes |
-| vpc_id | The VPC ID where the ALB will be created. | `string` | - | yes |
-| subnet_ids | The IDs of the subnets where the ALB will be created. | `list(string)` | - | yes |
-| internal | Determines whether to create an internal or public facing load balancer. | `bool` | `false` | no |
-| certificate_arn | The ARN of the ACM certificate to associate with the HTTPS listener. | `string` | - | yes |
+| Name            | Description                             | Type          | Default | Required |
+|-----------------|-----------------------------------------|---------------|---------|:--------:|
+| project         | Project name                            | `string`      | -       |   yes    |
+| environment     | Environment name                        | `string`      | -       |   yes    |
+| vpc_id          | The VPC ID to attach the ALB to         | `string`      | -       |   yes    |
+| subnet_ids      | A list of subnet IDs for the ALB        | `list(string)`| -       |   yes    |
+| internal        | Whether to create an internal ALB       | `bool`        | -       |   yes    |
+| certificate_arn | ACM certificate ARN for HTTPS           | `string`      | -       |   yes    |
+| idle_timeout    | Idle timeout in seconds (up to 4000)    | `number`      | 60      |    no    |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| dns_name | The DNS name of the created Application Load Balancer. |
+| Name     | Description         |
+|----------|---------------------|
+| dns_name | The DNS name of the ALB |
 
-## Example Usage
+## Usage examples
+
+### Basic Usage Example
 
 ```hcl
-module "application_load_balancer" {
-  source          = "s3::https://s3.amazonaws.com/ot-turbo-artifacts/tf/modules/aws/dev/alb.zip"
-
-  project         = "my_project"
-  environment     = "my_environment"
-  vpc_id          = "vpc-0example0"
-  subnet_ids      = ["subnet-0example1", "subnet-0example2"]
+module "alb" {
+  source          = "https://github.com/opstimus/terraform-aws-alb?ref=v<RELEASE>"
+  project         = "my-project"
+  environment     = "production"
+  vpc_id          = "vpc-12345"
+  subnet_ids      = ["subnet-12345", "subnet-67890"]
   internal        = false
-  certificate_arn = "arn:aws:acm:region:account:certificate/example"
+  certificate_arn = "arn:aws:acm:region:account:certificate/certificate-id"
+  idle_timeout    = 60
 }
 ```
