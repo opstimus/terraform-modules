@@ -2,7 +2,7 @@
 
 ## Description
 
-This Terraform module creates and manages an AWS API Gateway with associated stages, deployments, and domain name mappings. It also configures CORS settings for the API.
+This Terraform module creates an AWS API Gateway v2 resource with CORS configuration, stages, and optional custom domain mappings. It supports defining a full HTTP API with deployment and optional domain name configuration.
 
 ## Requirements
 
@@ -13,48 +13,48 @@ This Terraform module creates and manages an AWS API Gateway with associated sta
 
 ## Providers
 
-| Name | Version  |
-|------|----------|
-| aws  | >= 4.0   |
+| Name | Version |
+|------|---------|
+| aws  | >= 4.0  |
 
 ## Inputs
 
-| Name              | Description            | Type           | Default | Required |
-|-------------------|------------------------|----------------|---------|:--------:|
-| project           | Project name           | `string`       | -       | yes      |
-| environment       | Environment name       | `string`       | -       | yes      |
-| name              | API name               | `string`       | -       | yes      |
-| cors_allow_origins| CORS allowed origins   | `list(string)` | -       | yes      |
-| cors_allow_methods| CORS allowed methods   | `list(string)` | ["*"]   | no       |
-| cors_allow_headers| CORS allowed headers   | `list(any)`    | ["*"]   | no       |
-| cors_max_age      | CORS max age           | `number`       | 5       | no       |
-| api_version       | API version            | `string`       | "1.0"   | no       |
-| body              | API body               | `string`       | null    | no       |
-| domain_name       | Custom domain name     | `string`       | null    | no       |
-| certificate_arn   | Certificate ARN        | `string`       | null    | no       |
+| Name              | Description                                | Type          | Default          | Required |
+|-------------------|--------------------------------------------|---------------|------------------|:--------:|
+| project           | Project name                               | `string`      | `-`              | yes      |
+| environment       | Environment name                           | `string`      | `-`              | yes      |
+| name              | API name                                   | `string`      | `-`              | yes      |
+| cors_allow_origins| List of allowed origins for CORS           | `list(string)`| `-`              | yes      |
+| cors_allow_methods| List of allowed methods for CORS           | `list(string)`| `["*"]`          | no       |
+| cors_allow_headers| List of allowed headers for CORS           | `list(any)`   | `["*"]`          | no       |
+| cors_max_age      | Maximum age for CORS preflight requests    | `number`      | `5`              | no       |
+| api_version       | Version of the API                         | `string`      | `"1.0"`          | no       |
+| body              | OpenAPI definition for the API             | `string`      | `null`           | no       |
+| domain_name       | Custom domain name for the API             | `string`      | `null`           | no       |
+| certificate_arn   | ARN of the SSL certificate for the domain  | `string`      | `null`           | no       |
 
 ## Outputs
 
-| Name         | Description           |
-|--------------|-----------------------|
-| execution_arn| The execution ARN of the API |
+| Name           | Description                                  |
+|----------------|----------------------------------------------|
+| execution_arn  | The execution ARN of the created API Gateway |
 
 ## Usage examples
 
-### Example usage of the module
+### Basic Usage
 
 ```hcl
 module "api_gateway" {
-  source             = "path_to_your_module"
-  project            = "my_project"
-  environment        = "prod"
-  name               = "my_api"
-  cors_allow_origins = ["https://example.com"]
-  cors_allow_methods = ["GET", "POST"]
-  cors_allow_headers = ["Authorization"]
-  cors_max_age       = 3600
-  api_version        = "1.0"
-  body               = null
-  domain_name        = "api.example.com"
-  certificate_arn    = "arn:aws:acm:region:account:certificate/certificate_id"
+  source              = "github.com/opstimus/terraform-aws-api-gateway?ref=v<RELEASE>"
+
+  project             = "example-project"
+  environment         = "dev"
+  name                = "example-api"
+  cors_allow_origins  = ["*"]
+
+  # Optional configurations
+  api_version         = "1.0"
+  domain_name         = "api.example.com"
+  certificate_arn     = "arn:aws:acm:region:account-id:certificate/certificate-id"
 }
+```
