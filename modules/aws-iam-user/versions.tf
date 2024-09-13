@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.0"
+      version = ">= 4.0"
     }
 
     external = {
@@ -15,7 +15,7 @@ terraform {
     }
 
     time = {
-      version = "~> 0.9"
+      version = ">= 0.9"
     }
   }
 }
