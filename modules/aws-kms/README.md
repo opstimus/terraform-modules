@@ -1,47 +1,52 @@
-# AWS KMS Key
+# AWS KMS Key Module
 
-## Description
+## Description 
 
-This Terraform module creates a custom Amazon Key Management Service (KMS) key with an optional alias.
+This Terraform module provisions an AWS KMS (Key Management Service) key and an associated alias. It enables you to create a custom KMS key with optional key rotation and tag it with specific project and environment details.
 
-## Requirements
+## Requirements 
 
-| Name | Version |
-|------|---------|
-| terraform | >= 1.3.0 |
-| aws | ~> 4.0 |
+| Name | Version | 
+|------|---------| 
+| terraform | >= 1.3.0 | 
+| aws | >= 4.0 | 
 
-## Providers
+## Providers 
 
-| Name | Version |
-|------|---------|
-| aws | ~> 4.0 |
+| Name | Version | 
+|------|---------| 
+| aws | >= 4.0 | 
 
-## Inputs
+## Inputs 
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| project | The name of the project. | `string` | - | yes |
-| environment | The name of the environment. | `string` | - | yes |
-| resource_name | The name of the resource to create the KMS key for. | `string` | - | yes |
-| enable_key_rotation | Whether to enable key rotation for the KMS key. | `bool` | `true` | no |
+| Name              | Description                        | Type    | Default | Required | 
+|-------------------|------------------------------------|---------|---------|:--------:| 
+| project           | Project name                       | string  | -       | yes      | 
+| environment       | Environment name                   | string  | -       | yes      | 
+| resource_name     | Resource name created KMS for      | string  | -       | yes      | 
+| enable_key_rotation | Enable key rotation                | bool    | true    | no       | 
 
-## Outputs
+## Outputs 
 
-| Name | Description |
-|------|-------------|
-| key_arn | The ARN of the created KMS key. |
+| Name    | Description       | 
+|---------|-------------------| 
+| key_arn | The ARN of the KMS key | 
 
-## Example Usage
+## Usage examples 
+
+### Example 1: Basic usage of the module
 
 ```hcl
 module "kms_key" {
-  source            = "s3::https://s3.amazonaws.com/ot-turbo-artifacts/tf/modules/aws/dev/kms.zip"
-
-  project           = "my_project"
-  environment       = "my_environment"
-  resource_name     = "my_resource"
+  source              = "github.com/opstimus/terraform-aws-kms?ref=v<RELEASE>"
+  project             = "my-project"
+  environment         = "dev"
+  resource_name       = "my-key"
   enable_key_rotation = true
+}
+
+output "key_arn" {
+  value = module.kms_key.key_arn
 }
 ```
 
