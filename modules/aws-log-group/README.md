@@ -1,49 +1,50 @@
-# AWS CloudWatch Log Group
+# CloudWatch Log Group Module
 
 ## Description
 
-This Terraform module creates a CloudWatch Log Group with a customizable prefix, project name, environment, and log group name.
+This Terraform module creates an AWS CloudWatch Log Group with a customizable name and retention policy. The log group name is structured using a prefix, project name, environment, and a specific group name. The retention period for logs is also configurable.
 
 ## Requirements
 
-| Name | Version |
-|------|---------|
+| Name      | Version  |
+|-----------|----------|
 | terraform | >= 1.3.0 |
-| aws | ~> 4.0 |
+| aws       | >= 4.0   |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| aws | ~> 4.0 |
+| Name | Version  |
+|------|----------|
+| aws  | >= 4.0   |
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| prefix | The service prefix (i.e. 'ecs'). | `string` | - | yes |
-| project | The name of the project. | `string` | - | yes |
-| environment | The name of the environment. | `string` | - | yes |
-| name | The name of the log group (i.e. 'api'). | `string` | - | yes |
-| retention_in_days | The number of days to retain log events. | `number` | `180` | no |
+| Name             | Description                                  | Type      | Default | Required |
+|------------------|----------------------------------------------|-----------|---------|:--------:|
+| project          | Project name                                 | `string`  | -       |   yes    |
+| environment      | Environment name                             | `string`  | -       |   yes    |
+| name             | Log group name (e.g., api)                   | `string`  | -       |   yes    |
+| prefix           | Service prefix (e.g., ecs)                   | `string`  | -       |   yes    |
+| retention_in_days| Log retention period in days                 | `number`  | 180     |    no    |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| log_group | The name of the created CloudWatch Log Group. |
+| Name      | Description           |
+|-----------|-----------------------|
+| log_group | The name of the log group |
 
-## Example Usage
+## Usage examples
+
+### Basic Usage Example
 
 ```hcl
 module "cloudwatch_log_group" {
-  source            = "s3::https://s3.amazonaws.com/ot-turbo-artifacts/tf/modules/aws/dev/log-group.zip"
-
-  prefix            = "ecs"
-  project           = "my_project"
-  environment       = "my_environment"
+  source            = "https://github.com/opstimus/terraform-aws-log-group?ref=v<RELEASE>"
+  project           = "my-project"
+  environment       = "production"
   name              = "api"
-  retention_in_days = 180
+  prefix            = "ecs"
+  retention_in_days = 365
 }
 ```
 
