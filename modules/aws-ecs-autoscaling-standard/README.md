@@ -1,58 +1,57 @@
-# AWS ECS Auto Scaling Standard
+# AWS ECS Auto Scaling Standard Module
 
-## Description
+## Description 
 
-This Terraform module creates an AWS Application Auto Scaling Target for an ECS service, and applies scaling policies for both CPU and memory utilization based on average value.
+This Terraform module sets up AWS App Autoscaling targets and policies for ECS services. It manages scaling actions based on CPU and memory utilization metrics, allowing you to maintain optimal performance and resource usage.
 
-This is useful when you need to automatically scale your ECS services based on CPU or memory usage.
+## Requirements 
 
-## Requirements
+| Name | Version | 
+|------|---------| 
+| terraform | >= 1.3.0 | 
+| aws | >= 4.0 | 
 
-| Name | Version |
-|------|---------|
-| terraform | >= 1.3.0 |
-| aws | ~> 4.0 |
+## Providers 
 
-## Providers
+| Name | Version | 
+|------|---------| 
+| aws | >= 4.0 | 
 
-| Name | Version |
-|------|---------|
-| aws | ~> 4.0 |
+## Inputs 
 
-## Inputs
+| Name               | Description                           | Type    | Default | Required | 
+|--------------------|---------------------------------------|---------|---------|:--------:| 
+| cluster_name       | Name of the ECS cluster               | string  | -       | yes      | 
+| service_name       | Name of the ECS service               | string  | -       | yes      | 
+| min_capacity       | Minimum capacity for autoscaling      | number  | -       | yes      | 
+| max_capacity       | Maximum capacity for autoscaling      | number  | -       | yes      | 
+| cpu_target_value   | Target CPU utilization percentage     | number  | 60      | no       | 
+| memory_target_value | Target memory utilization percentage  | number  | 60      | no       | 
+| scale_in_cooldown  | Cooldown period for scale-in actions  | number  | 300     | no       | 
+| scale_out_cooldown | Cooldown period for scale-out actions | number  | 60      | no       | 
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| cluster_name | The name of the ECS cluster. | `string` | - | yes |
-| service_name | The name of the ECS service. | `string` | - | yes |
-| min_capacity | The minimum capacity to scale down to. | `number` | - | yes |
-| max_capacity | The maximum capacity to scale up to. | `number` | - | yes |
-| cpu_target_value | The target average CPU utilization. | `number` | 60 | no |
-| memory_target_value | The target average memory utilization. | `number` | 60 | no |
-| scale_in_cooldown | The cooldown period in seconds after a scale in event. | `number` | 300 | no |
-| scale_out_cooldown | The cooldown period in seconds after a scale out event. | `number` | 60 | no |
+## Outputs 
 
-## Outputs
+| Name                | Description                     | 
+|---------------------|---------------------------------| 
+| resource_id         | The resource ID of the autoscaling target | 
+| scalable_dimension  | The scalable dimension of the autoscaling target | 
+| service_namespace   | The service namespace of the autoscaling target | 
 
-| Name | Description |
-|------|-------------|
-| resource_id | The resource ID of the scalable target. |
-| scalable_dimension | The scalable dimension associated with the scalable target. |
-| service_namespace | The service namespace associated with the scalable target. |
+## Usage examples 
 
-## Example Usage
+### Example 1: Basic usage of the module
 
 ```hcl
-module "appautoscaling_target" {
-  source            = "s3::https://s3.amazonaws.com/ot-turbo-artifacts/tf/modules/aws/dev/ecs-autoscaling-standard.zip"
-
-  cluster_name      = "my_cluster"
-  service_name      = "my_service"
-  min_capacity      = 1
-  max_capacity      = 10
-  cpu_target_value  = 70
-  memory_target_value = 80
-  scale_in_cooldown  = 300
-  scale_out_cooldown = 60
+module "app_autoscaling" {
+  source              = "github.com/opstimus/terraform-aws-ecs-autoscaling-standard?ref=v<RELEASE>"
+  cluster_name        = "my-cluster"
+  service_name        = "my-service"
+  min_capacity        = 1
+  max_capacity        = 10
+  cpu_target_value    = 50
+  memory_target_value = 50
+  scale_in_cooldown   = 300
+  scale_out_cooldown  = 60
 }
 ```
