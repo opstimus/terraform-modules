@@ -306,17 +306,26 @@ resource "aws_eip" "nat_1" {
   tags = {
     "Name" = "${var.project}-${var.environment}-nat-1"
   }
+  lifecycle {
+    prevent_destroy = true #set true for safety measures
+  }
 }
 
 resource "aws_eip" "nat_2" {
   tags = {
     "Name" = "${var.project}-${var.environment}-nat-2"
   }
+  lifecycle {
+    prevent_destroy = true #set true for safety measures
+  }
 }
 
 resource "aws_eip" "nat_3" {
   tags = {
     "Name" = "${var.project}-${var.environment}-nat-3"
+  }
+  lifecycle {
+    prevent_destroy = true #set true for safety measures
   }
 }
 
