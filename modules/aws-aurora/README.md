@@ -34,7 +34,7 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 | engine                       | Aurora engine type (aurora-mysql, aurora-postgresql)      | `string`          | -                    | yes      |
 | engine_version               | Version of the Aurora engine                             | `string`          | -                    | yes      |
 | db_name                      | Name of the default database                             | `string`          | -                    | yes      |
-| master_username              | Master username for the database                         | `string`          | "admin"              | no       |
+| master_username              | Master username for the database                         | `string`          | "opadmin"              | no       |
 | skip_final_snapshot          | Skip final snapshot on cluster deletion                  | `bool`            | true                 | no       |
 | snapshot_identifier          | Identifier of the snapshot to restore from               | `string`          | ""                   | no       |
 | deletion_protection          | Enable deletion protection for the cluster               | `bool`            | false                | no       |

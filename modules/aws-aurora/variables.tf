@@ -41,7 +41,7 @@ variable "db_name" {
 variable "master_username" {
   type        = string
   description = "Master username"
-  default     = "admin"
+  default     = "opadmin"
 }
 
 variable "skip_final_snapshot" {
