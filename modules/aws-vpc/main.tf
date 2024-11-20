@@ -180,7 +180,7 @@ resource "aws_instance" "nat_1" {
     #!/bin/bash
     sudo sysctl -w net.ipv4.ip_forward=1
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo yum install iptables-services
+    sudo yum -y install iptables-services
     sudo service iptables save
   EOF
   )
@@ -208,7 +208,7 @@ resource "aws_instance" "nat_2" {
     #!/bin/bash
     sudo sysctl -w net.ipv4.ip_forward=1
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo yum install iptables-services
+    sudo yum -y install iptables-services
     sudo service iptables save
   EOF
   )
@@ -236,7 +236,7 @@ resource "aws_instance" "nat_3" {
     #!/bin/bash
     sudo sysctl -w net.ipv4.ip_forward=1
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo yum install iptables-services
+    sudo yum -y install iptables-services
     sudo service iptables save
   EOF
   )
