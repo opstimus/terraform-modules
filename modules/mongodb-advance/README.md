@@ -73,7 +73,7 @@ module "mongodb_cluster" {
   db_version                    = "6.0"
   db_username                   = "admin"
   db_name                       = "authentication_api"
-  witelist_ip_addresses = {
+  witelist_ip_addresses         = {
     "Location1" = "192.168.1.0/32"
     "Location2" = "192.168.2.0/32"
   }
