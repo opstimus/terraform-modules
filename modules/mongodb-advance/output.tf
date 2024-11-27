@@ -1,11 +1,11 @@
 output "connection_strings" {
-  value = mongodbatlas_advanced_cluster.main.connection_strings.0.standard_srv
+  value = mongodbatlas_advanced_cluster.main.connection_strings[0].standard_srv
 }
 
 resource "aws_ssm_parameter" "dns" {
   name  = "/${var.project}/${var.environment}/central/mongo/${var.name}/dns"
   type  = "String"
-  value = mongodbatlas_advanced_cluster.main.connection_strings.0.standard_srv
+  value = mongodbatlas_advanced_cluster.main.connection_strings[0].standard_srv
 }
 
 resource "aws_ssm_parameter" "username" {
