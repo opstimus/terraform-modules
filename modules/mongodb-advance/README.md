@@ -56,7 +56,7 @@ This module sets up a MongoDB Cluster along with necessary resources. Also this 
 ### Example 1
 
 ```hcl
-module "aurora_rds_cluster" {
+module "mongodb_cluster" {
   source = "https://github.com/opstimus/terraform-mongodb-advance?ref=v<RELEASE>"
 
   project                       = "my-project"
