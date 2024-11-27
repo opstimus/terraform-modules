@@ -38,7 +38,7 @@ This module sets up a MongoDB Cluster along with necessary resources. Also this 
 | backup_enabled                   | Enable auto backup                                       | `bool`            | false                | no       |
 | termination_protection_enabled   | Enable deletion protection for the cluster               | `bool`            | false                | no       |
 | instance_size                    | Cluster size                                             | `string`          | ""                   | yes      |
-| disk_size_gb                     | Disk capacity                                            | `number`          | "10"                 | no       |
+| disk_size_gb                     | Disk capacity                                            | `number`          | 10                   | no       |
 | db_username                      | Master username for the DB                               | `string`          | "admin"              | no       |
 | db_name                          | Default database name                                    | `string`          | -                    | yes      |
 | witelist_ip_addresses            | IP Address that should be able to access the database    | `map(string)`     | {}                   | yes      |
