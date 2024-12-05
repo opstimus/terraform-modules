@@ -8,6 +8,12 @@ variable "environment" {
   description = "Environment name"
 }
 
+variable "name" {
+  type        = string
+  description = "Cluster name"
+  default     = ""
+}
+
 variable "parameter_group_family" {
   type = string
 }

@@ -1,6 +1,13 @@
+data "aws_region" "current" {}
+
+locals {
+  name     = var.name != "" ? "-${var.name}" : ""
+  ssm_name = var.name != "" ? "/${var.name}" : ""
+}
+
 resource "aws_security_group" "db" {
-  name        = "${var.project}-${var.environment}-db"
-  description = "${var.project}-${var.environment}-db"
+  name        = "${var.project}-${var.environment}${local.name}-db"
+  description = "${var.project}-${var.environment}${local.name}-db"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -19,7 +26,7 @@ resource "aws_security_group" "db" {
   }
 
   tags = {
-    Name = "${var.project}-${var.environment}-db"
+    Name = "${var.project}-${var.environment}${local.name}-db"
   }
 }
 
@@ -30,7 +37,7 @@ resource "random_password" "main" {
 }
 
 resource "aws_secretsmanager_secret" "main" {
-  name = "${var.project}-${var.environment}-db"
+  name = "${var.project}-${var.environment}${local.name}-db"
 }
 resource "aws_secretsmanager_secret_version" "main" {
   secret_id     = aws_secretsmanager_secret.main.id
@@ -38,11 +45,11 @@ resource "aws_secretsmanager_secret_version" "main" {
 }
 
 resource "aws_db_subnet_group" "main" {
-  name       = "${var.project}-${var.environment}-aurora"
+  name       = "${var.project}-${var.environment}${local.name}-aurora"
   subnet_ids = var.private_subnet_ids
 
   tags = {
-    Name = "${var.project}-${var.environment}"
+    Name = "${var.project}-${var.environment}${local.name}"
   }
 }
 
@@ -99,7 +106,7 @@ resource "aws_rds_cluster" "main" {
   deletion_protection             = var.deletion_protection
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
   backup_retention_period         = var.backup_retention_period
-  cluster_identifier              = "${var.project}-${var.environment}-cluster"
+  cluster_identifier              = "${var.project}-${var.environment}${local.name}-cluster"
   storage_encrypted               = var.storage_encrypted
   kms_key_id                      = var.storage_encrypted == true ? var.kms_key_id : null
   network_type                    = var.network_type
@@ -109,7 +116,7 @@ resource "aws_rds_cluster" "main" {
 resource "aws_rds_cluster_instance" "cluster_instances" {
   count                           = var.instance_count
   apply_immediately               = true
-  identifier                      = "${var.project}-${var.environment}-instance-${count.index}"
+  identifier                      = "${var.project}-${var.environment}${local.name}-instance-${count.index}"
   cluster_identifier              = aws_rds_cluster.main.id
   engine                          = aws_rds_cluster.main.engine
   engine_version                  = aws_rds_cluster.main.engine_version
@@ -123,7 +130,7 @@ resource "aws_rds_cluster_instance" "cluster_instances" {
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   count                     = var.enable_cpu_alarm ? 1 : 0
-  alarm_name                = "${var.project}-${var.environment}: CPU usage on Aurora '${aws_rds_cluster.main.id}' is high"
+  alarm_name                = "${var.project}-${var.environment}${local.name}: CPU usage on Aurora '${aws_rds_cluster.main.id}' is high"
   alarm_description         = "Aurora CPU utlization high"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = 15
@@ -143,7 +150,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
 
 resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
   count                     = var.enable_cpu_alarm ? 1 : 0
-  alarm_name                = "${var.project}-${var.environment}: CPU usage on Aurora '${aws_rds_cluster.main.id}' is critical"
+  alarm_name                = "${var.project}-${var.environment}${local.name}: CPU usage on Aurora '${aws_rds_cluster.main.id}' is critical"
   alarm_description         = "Aurora CPU utlization critical"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = 15
@@ -163,7 +170,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
 
 resource "aws_secretsmanager_secret" "rds_proxy" {
   count = var.enable_rds_proxy ? 1 : 0
-  name  = "${var.project}-${var.environment}-db-rds-proxy"
+  name  = "${var.project}-${var.environment}${local.name}-db-rds-proxy"
 }
 
 resource "aws_secretsmanager_secret_version" "rds_proxy" {
@@ -185,7 +192,7 @@ data "aws_kms_key" "rds_proxy" {
 
 resource "aws_iam_role" "rds_proxy" {
   count = var.enable_rds_proxy ? 1 : 0
-  name  = "${var.project}-${var.environment}-db-rds-proxy"
+  name  = "${var.project}-${var.environment}${local.name}-db-rds-proxy"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -202,7 +209,7 @@ resource "aws_iam_role" "rds_proxy" {
 
 resource "aws_iam_role_policy" "rds_proxy" {
   count = var.enable_rds_proxy ? 1 : 0
-  name  = "${var.project}-${var.environment}-db-rds-proxy"
+  name  = "${var.project}-${var.environment}${local.name}-db-rds-proxy"
   role  = aws_iam_role.rds_proxy[0].id
 
   policy = jsonencode({
@@ -229,7 +236,7 @@ resource "aws_iam_role_policy" "rds_proxy" {
         ],
         Condition = {
           "StringEquals" = {
-            "kms:ViaService" = "secretsmanager.ap-southeast-1.amazonaws.com"
+            "kms:ViaService" = "secretsmanager.${data.aws_region.current.name}.amazonaws.com"
           }
         }
       }
@@ -239,7 +246,7 @@ resource "aws_iam_role_policy" "rds_proxy" {
 
 resource "aws_db_proxy" "main" {
   count                  = var.enable_rds_proxy ? 1 : 0
-  name                   = "${var.project}-${var.environment}-db"
+  name                   = "${var.project}-${var.environment}${local.name}-db"
   debug_logging          = var.debug_logging
   engine_family          = var.engine_family
   idle_client_timeout    = 1800
@@ -279,7 +286,7 @@ resource "aws_db_proxy_target" "main" {
 resource "aws_db_proxy_endpoint" "main" {
   count                  = var.enable_rds_proxy ? 1 : 0
   db_proxy_name          = aws_db_proxy.main[0].name
-  db_proxy_endpoint_name = "${var.project}-${var.environment}-readonly"
+  db_proxy_endpoint_name = "${var.project}-${var.environment}${local.name}-readonly"
   vpc_subnet_ids         = var.private_subnet_ids
   vpc_security_group_ids = [aws_security_group.db.id]
   target_role            = "READ_ONLY"

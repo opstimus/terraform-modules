@@ -28,6 +28,7 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 |------------------------------|----------------------------------------------------------|-------------------|----------------------|:--------:|
 | project                      | Project name                                             | `string`          | -                    | yes      |
 | environment                  | Environment name                                         | `string`          | -                    | yes      |
+| name                         | Cluster identifier name                                  | `string`           | -                   | no       |
 | parameter_group_family        | The DB parameter group family                            | `string`          | -                    | yes      |
 | instance_count               | Number of RDS instances in the cluster                   | `number`          | 1                    | no       |
 | engine_mode                  | Aurora engine mode (provisioned, serverless, etc.)        | `string`          | "provisioned"        | no       |
