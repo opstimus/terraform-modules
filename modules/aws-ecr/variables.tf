@@ -21,3 +21,8 @@ variable "account_ids" {
   type        = list(any)
   description = "Accounts that can pull images from the repository"
 }
+
+variable "create_iam_user" {
+  type    = bool
+  default = false
+}
