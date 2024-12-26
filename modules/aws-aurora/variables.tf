@@ -184,10 +184,34 @@ variable "max_idle_connections_percent" {
   default = 50
 }
 
-variable "to_port" {
-  type = number
+###############
+# Autoscaling #
+###############
+variable "enable_autoscaling" {
+  type    = bool
+  default = false
 }
 
-variable "from_port" {
-  type = number
+variable "max_capacity" {
+  type        = number
+  description = "Auto Scaling maximum capacity"
+  default     = 2
+}
+
+variable "cpu_target_value" {
+  type        = number
+  description = "CPU target value for autoscaling"
+  default     = 80
+}
+
+variable "scale_out_cooldown" {
+  type        = number
+  description = "Cooldown period in seconds after a scale out activity"
+  default     = 300
+}
+
+variable "scale_in_cooldown" {
+  type        = number
+  description = "Cooldown period in seconds after a scale in activity"
+  default     = 900
 }

@@ -61,6 +61,11 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 | init_query                   | SQL query to initialize each connection                  | `string`          | null                 | no       |
 | max_connections_percent      | Maximum percentage of connections to allow               | `number`          | 80                   | no       |
 | max_idle_connections_percent | Maximum percentage of idle connections                   | `number`          | 50                   | no       |
+| enable_autoscaling           | Enable autoscaling. `instance_count` should be 2 or more | `bool`            | false                | no       |
+| max_capacity                 | Auto Scaling maximum capacity                            | `number`          | `2`                  | no       |
+| cpu_target_value             | CPU target value for autoscaling                         | `number`          | `80`                 | no       |
+| scale_out_cooldown           | Cooldown period in seconds after a scale out activity    | `number`          | `300`                | no       |
+| scale_in_cooldown            | Cooldown period in seconds after a scale in activity     | `number`          | `900`                | no       |
 
 ## Outputs
 

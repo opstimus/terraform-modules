@@ -11,8 +11,8 @@ resource "aws_security_group" "db" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = var.from_port
-    to_port     = var.to_port
+    from_port   = var.port
+    to_port     = var.port
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
   }
@@ -186,6 +186,9 @@ resource "aws_secretsmanager_secret_version" "rds_proxy" {
   })
 }
 
+#############
+# RDS Proxy #
+#############
 data "aws_kms_key" "rds_proxy" {
   key_id = "alias/aws/secretsmanager"
 }
@@ -290,4 +293,37 @@ resource "aws_db_proxy_endpoint" "main" {
   vpc_subnet_ids         = var.private_subnet_ids
   vpc_security_group_ids = [aws_security_group.db.id]
   target_role            = "READ_ONLY"
+}
+
+###############
+# Autoscaling #
+###############
+resource "aws_appautoscaling_target" "main" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  min_capacity       = var.instance_count - 1
+  max_capacity       = var.max_capacity
+  resource_id        = "cluster:${aws_rds_cluster.main.cluster_identifier}"
+  scalable_dimension = "rds:cluster:ReadReplicaCount"
+  service_namespace  = "rds"
+}
+
+resource "aws_appautoscaling_policy" "cpu" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  name               = "aurora-${aws_rds_cluster.main.cluster_identifier}-cpu"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.main[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.main[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.main[0].service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "RDSReaderAverageCPUUtilization"
+    }
+
+    target_value       = var.cpu_target_value
+    scale_out_cooldown = var.scale_out_cooldown
+    scale_in_cooldown  = var.scale_in_cooldown
+  }
 }
