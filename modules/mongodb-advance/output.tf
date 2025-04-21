@@ -13,9 +13,3 @@ resource "aws_ssm_parameter" "username" {
   type  = "String"
   value = mongodbatlas_database_user.main.username
 }
-
-resource "aws_ssm_parameter" "db_name" {
-  name  = "/${var.project}/${var.environment}/central/mongo/${var.name}/db_name"
-  type  = "String"
-  value = var.db_name
-}
