@@ -40,6 +40,9 @@ resource "mongodbatlas_advanced_cluster" "main" {
       provider_name = var.provider_name
       priority      = 7
       region_name   = var.region
+      auto_scaling {
+        disk_gb_enabled = var.disk_gb_enabled
+      }
     }
   }
 }

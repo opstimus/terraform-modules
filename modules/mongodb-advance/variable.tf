@@ -62,6 +62,12 @@ variable "disk_size_gb" {
   default = 10
 }
 
+variable "disk_gb_enabled" {
+  description = "Enable disk auto-scaling"
+  type        = bool
+  default     = false
+}
+
 variable "db_username" {
   type    = string
   default = "admin"
