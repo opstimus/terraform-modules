@@ -71,6 +71,7 @@ module "mongodb_cluster" {
   cluster_type                  = "REPLICASET"
   instance_size                 = "M10"
   disk_size_gb                  = 10
+  disk_gb_enabled               = false
   db_version                    = "6.0"
   db_username                   = "admin"
   db_name                       = "authentication_api"
