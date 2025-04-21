@@ -73,10 +73,6 @@ variable "db_username" {
   default = "admin"
 }
 
-variable "db_name" {
-  type = string
-}
-
 variable "witelist_ip_addresses" {
   type = map(string)
 }
