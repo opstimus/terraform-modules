@@ -71,4 +71,10 @@ resource "mongodbatlas_project_ip_access_list" "main" {
   comment    = each.key
 }
 
-
+resource "aws_secretsmanager_secret" "full_dns" {
+  name = "${var.project}-${var.environment}-${var.name}-full-dns"
+}
+resource "aws_secretsmanager_secret_version" "full_dns" {
+  secret_id     = aws_secretsmanager_secret.main.id
+  secret_string = "mongodb+srv://${var.db_username}:${random_password.main.result}@${replace(mongodbatlas_advanced_cluster.main.connection_strings[0].standard_srv, "mongodb+srv://", "")}"
+}
