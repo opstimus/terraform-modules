@@ -52,3 +52,9 @@ variable "private_cidr_3" {
   type        = string
   description = "Private subnet cird"
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource."
+  default     = {}
+}

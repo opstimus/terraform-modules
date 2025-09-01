@@ -4,9 +4,12 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
-  tags = {
-    Name = "${var.project}-${var.environment}"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}"
+    },
+    var.tags
+  )
 }
 
 data "aws_availability_zones" "main" {
@@ -28,9 +31,12 @@ resource "aws_subnet" "public_1" {
   cidr_block              = var.public_cidr_1
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.main.id
-  tags = {
-    Name = "${var.project}-${var.environment}-public-1"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-public-1"
+    },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "public_2" {
@@ -38,9 +44,12 @@ resource "aws_subnet" "public_2" {
   cidr_block              = var.public_cidr_2
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.main.id
-  tags = {
-    Name = "${var.project}-${var.environment}-public-2"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-public-2"
+    },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "public_3" {
@@ -48,17 +57,22 @@ resource "aws_subnet" "public_3" {
   cidr_block              = var.public_cidr_3
   map_public_ip_on_launch = true
   vpc_id                  = aws_vpc.main.id
-  tags = {
-    Name = "${var.project}-${var.environment}-public-3"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-public-3"
+    },
+    var.tags
+  )
 }
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "${var.project}-${var.environment}"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}"
+    },
+    var.tags
+  )
 }
 resource "aws_default_route_table" "public" {
   default_route_table_id = aws_vpc.main.default_route_table_id
@@ -68,59 +82,77 @@ resource "aws_default_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  tags = {
-    "Name" = "${var.project}-${var.environment}-public"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-public"
+    },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "private_1" {
   availability_zone = data.aws_availability_zones.main.names[0]
   cidr_block        = var.private_cidr_1
   vpc_id            = aws_vpc.main.id
-  tags = {
-    Name = "${var.project}-${var.environment}-private-1"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-private-1"
+    },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "private_2" {
   availability_zone = data.aws_availability_zones.main.names[1]
   cidr_block        = var.private_cidr_2
   vpc_id            = aws_vpc.main.id
-  tags = {
-    Name = "${var.project}-${var.environment}-private-2"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-private-2"
+    },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "private_3" {
   availability_zone = data.aws_availability_zones.main.names[2]
   cidr_block        = var.private_cidr_3
   vpc_id            = aws_vpc.main.id
-  tags = {
-    Name = "${var.project}-${var.environment}-private-3"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-private-3"
+    },
+    var.tags
+  )
 }
 resource "aws_route_table" "private_1" {
   vpc_id = aws_vpc.main.id
-
-  tags = {
-    "Name" = "${var.project}-${var.environment}-private-1"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-private-1"
+    },
+    var.tags
+  )
 }
 
 resource "aws_route_table" "private_2" {
   vpc_id = aws_vpc.main.id
-
-  tags = {
-    "Name" = "${var.project}-${var.environment}-private-2"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-private-2"
+    },
+    var.tags
+  )
 }
 
 resource "aws_route_table" "private_3" {
   vpc_id = aws_vpc.main.id
-
-  tags = {
-    "Name" = "${var.project}-${var.environment}-private-3"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-private-3"
+    },
+    var.tags
+  )
 }
 
 resource "aws_route_table_association" "private_1" {
@@ -161,9 +193,13 @@ resource "aws_security_group" "nat_instance" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
-  tags = {
-    Name = "${var.project}-${var.environment}-nat-instance"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-instance"
+    },
+    var.tags
+  )
+
 }
 
 data "aws_ami" "amazon_linux_2" {
@@ -199,9 +235,13 @@ resource "aws_instance" "nat_1" {
     http_tokens   = "required"
   }
 
-  tags = {
-    "Name" = "${var.project}-${var.environment}-nat-instance-1"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-instance-1"
+    },
+    var.tags
+  )
+
 }
 
 resource "aws_instance" "nat_2" {
@@ -227,9 +267,13 @@ resource "aws_instance" "nat_2" {
     http_tokens   = "required"
   }
 
-  tags = {
-    "Name" = "${var.project}-${var.environment}-nat-instance-2"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-instance-2"
+    },
+    var.tags
+  )
+
 }
 
 resource "aws_instance" "nat_3" {
@@ -255,9 +299,13 @@ resource "aws_instance" "nat_3" {
     http_tokens   = "required"
   }
 
-  tags = {
-    "Name" = "${var.project}-${var.environment}-nat-instance-3"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-instance-3"
+    },
+    var.tags
+  )
+
 }
 
 resource "aws_nat_gateway" "gateway_1" {
@@ -265,9 +313,12 @@ resource "aws_nat_gateway" "gateway_1" {
   connectivity_type = "public"
   allocation_id     = aws_eip.nat_1.allocation_id
   subnet_id         = aws_subnet.public_1.id
-  tags = {
-    "Name" = "${var.project}-${var.environment}-1"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-1"
+    },
+    var.tags
+  )
 }
 
 resource "aws_nat_gateway" "gateway_2" {
@@ -275,9 +326,12 @@ resource "aws_nat_gateway" "gateway_2" {
   connectivity_type = "public"
   allocation_id     = aws_eip.nat_2.allocation_id
   subnet_id         = aws_subnet.public_2.id
-  tags = {
-    "Name" = "${var.project}-${var.environment}-2"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-2"
+    },
+    var.tags
+  )
 }
 
 resource "aws_nat_gateway" "gateway_3" {
@@ -285,9 +339,12 @@ resource "aws_nat_gateway" "gateway_3" {
   connectivity_type = "public"
   allocation_id     = aws_eip.nat_3.allocation_id
   subnet_id         = aws_subnet.public_3.id
-  tags = {
-    "Name" = "${var.project}-${var.environment}-3"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-3"
+    },
+    var.tags
+  )
 }
 
 resource "aws_route" "private_1" {
@@ -312,27 +369,36 @@ resource "aws_route" "private_3" {
 }
 
 resource "aws_eip" "nat_1" {
-  tags = {
-    "Name" = "${var.project}-${var.environment}-nat-1"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-1"
+    },
+    var.tags
+  )
   lifecycle {
     prevent_destroy = true #set true for safety measures
   }
 }
 
 resource "aws_eip" "nat_2" {
-  tags = {
-    "Name" = "${var.project}-${var.environment}-nat-2"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-2"
+    },
+    var.tags
+  )
   lifecycle {
     prevent_destroy = true #set true for safety measures
   }
 }
 
 resource "aws_eip" "nat_3" {
-  tags = {
-    "Name" = "${var.project}-${var.environment}-nat-3"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-3"
+    },
+    var.tags
+  )
   lifecycle {
     prevent_destroy = true #set true for safety measures
   }
