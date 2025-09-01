@@ -3,6 +3,7 @@ resource "aws_security_group" "main" {
   name        = "${var.project}-${var.environment}-${var.name}"
   description = "${var.project}-${var.environment}-${var.name}"
   vpc_id      = var.vpc_id
+  tags        = var.tags
 
   dynamic "ingress" {
     for_each = var.ingress_rules
@@ -22,10 +23,6 @@ resource "aws_security_group" "main" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-
-  tags = {
-    Name = "${var.project}-${var.environment}-${var.name}"
-  }
 }
 
 resource "aws_instance" "main" {
@@ -35,9 +32,9 @@ resource "aws_instance" "main" {
   source_dest_check           = var.source_dest_check
   subnet_id                   = var.subnet_id
   key_name                    = var.key_name != null ? var.key_name : null
-  disable_api_termination     = var.termination_protection
+  disable_api_termination     = var.termination_protection ? true : false
   associate_public_ip_address = var.associate_public_ip_address
-
+  tags                        = var.tags
   root_block_device {
     delete_on_termination = true
     volume_size           = var.root_volume_size
@@ -52,17 +49,11 @@ resource "aws_instance" "main" {
     http_endpoint = "enabled"
     http_tokens   = "required"
   }
-
-  tags = {
-    "Name" = "${var.project}-${var.environment}-${var.name}"
-  }
 }
 
 resource "aws_eip" "main" {
   count = var.enable_eip ? 1 : 0
-  tags = {
-    "Name" = "${var.project}-${var.environment}-${var.name}"
-  }
+  tags  = var.tags
 }
 
 resource "aws_eip_association" "main" {
