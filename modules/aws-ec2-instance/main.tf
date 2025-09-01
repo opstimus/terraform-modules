@@ -29,13 +29,14 @@ resource "aws_security_group" "main" {
 }
 
 resource "aws_instance" "main" {
-  ami                     = var.ami
-  instance_type           = var.instance_type
-  vpc_security_group_ids  = length(var.ingress_rules) > 0 ? [aws_security_group.main[0].id] : var.security_group_ids
-  source_dest_check       = var.source_dest_check
-  subnet_id               = var.subnet_id
-  key_name                = var.key_name != null ? var.key_name : null
-  disable_api_termination = var.termination_protection ? true : false
+  ami                         = var.ami
+  instance_type               = var.instance_type
+  vpc_security_group_ids      = length(var.ingress_rules) > 0 ? [aws_security_group.main[0].id] : var.security_group_ids
+  source_dest_check           = var.source_dest_check
+  subnet_id                   = var.subnet_id
+  key_name                    = var.key_name != null ? var.key_name : null
+  disable_api_termination     = var.termination_protection
+  associate_public_ip_address = var.associate_public_ip_address
 
   root_block_device {
     delete_on_termination = true
@@ -58,6 +59,7 @@ resource "aws_instance" "main" {
 }
 
 resource "aws_eip" "main" {
+  count = var.enable_eip ? 1 : 0
   tags = {
     "Name" = "${var.project}-${var.environment}-${var.name}"
   }
@@ -66,5 +68,5 @@ resource "aws_eip" "main" {
 resource "aws_eip_association" "main" {
   count         = var.enable_eip ? 1 : 0
   instance_id   = aws_instance.main.id
-  allocation_id = aws_eip.main.id
+  allocation_id = aws_eip.main[0].id
 }
