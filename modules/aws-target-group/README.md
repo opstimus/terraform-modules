@@ -61,5 +61,9 @@ module "lb_target_group" {
       path_patterns = ["/path/pattern1", "/path/pattern2"]
     }
   }
+  tags = {
+    Project     = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```
