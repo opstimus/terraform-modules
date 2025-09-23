@@ -2,9 +2,7 @@ resource "aws_kms_key" "main" {
   description             = "${var.resource_name} custom kms key"
   deletion_window_in_days = 7
   enable_key_rotation     = var.enable_key_rotation
-  tags = {
-    "Name" = "${var.project}-${var.environment}-${var.resource_name}"
-  }
+  tags                    = var.tags
 }
 
 resource "aws_kms_alias" "main" {

@@ -24,7 +24,8 @@ This Terraform module provisions an AWS KMS (Key Management Service) key and an 
 | project           | Project name                       | string  | -       | yes      | 
 | environment       | Environment name                   | string  | -       | yes      | 
 | resource_name     | Resource name created KMS for      | string  | -       | yes      | 
-| enable_key_rotation | Enable key rotation                | bool    | true    | no       | 
+| enable_key_rotation | Enable key rotation                | bool    | true    | no       |
+| tags              | tags                               | map(string)  | -  | no       | 
 
 ## Outputs 
 
@@ -43,6 +44,10 @@ module "kms_key" {
   environment         = "dev"
   resource_name       = "my-key"
   enable_key_rotation = true
+  tags = {
+    Name        = <project-name>
+    Environment = <environment-name>
+  }
 }
 
 output "key_arn" {
