@@ -38,6 +38,8 @@ resource "aws_ecs_service" "main" {
     weight            = var.capacity_provider_fargate_weight
     base              = var.capacity_provider_fargate_base
   }
+
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
@@ -61,6 +63,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
     ClusterName = var.cluster_name
     ServiceName = aws_ecs_service.main.name
   }
+
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
@@ -84,6 +88,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
     ClusterName = var.cluster_name
     ServiceName = aws_ecs_service.main.name
   }
+
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "memory_high" {
@@ -107,6 +113,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_high" {
     ClusterName = var.cluster_name
     ServiceName = aws_ecs_service.main.name
   }
+
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "memory_critical" {
@@ -130,4 +138,6 @@ resource "aws_cloudwatch_metric_alarm" "memory_critical" {
     ClusterName = var.cluster_name
     ServiceName = aws_ecs_service.main.name
   }
+
+  tags = var.tags
 }

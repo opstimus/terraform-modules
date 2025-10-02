@@ -13,6 +13,12 @@ variable "service" {
   description = "Service name | i.e api"
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource."
+  default     = {}
+}
+
 variable "cluster_name" {
   type = string
 }
