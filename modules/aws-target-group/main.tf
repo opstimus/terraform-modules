@@ -1,7 +1,7 @@
 resource "aws_lb_target_group" "main" {
   port        = var.port
   protocol    = "HTTP"
-  target_type = "ip"
+  target_type = var.target_type
   vpc_id      = var.vpc_id
   tags = merge(
     {

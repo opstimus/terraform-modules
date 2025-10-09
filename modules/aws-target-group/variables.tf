@@ -18,6 +18,12 @@ variable "port" {
   description = "Port number"
 }
 
+variable "target_type" {
+  type        = string
+  description = "Target type | i.e ip or instance"
+  default     = "ip"
+}
+
 variable "vpc_id" {
   type        = string
   description = "VPC ID"

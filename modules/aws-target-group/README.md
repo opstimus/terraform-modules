@@ -27,6 +27,7 @@ This Terraform module provisions an AWS Load Balancer target group along with li
 | environment            | Environment name                         | `string`    | -       |   yes    |
 | service                | Service name (i.e. api)                  | `string`    | -       |   yes    |
 | port                   | Port number                              | `string`    | -       |   yes    |
+| target_type            | Target type (i.e. ip, instance, lambda)  | `string`    | ip      |   yes    |
 | vpc_id                 | VPC ID                                   | `string`    | -       |   yes    |
 | application_status_code| Application health check status code     | `number`    | 200     |    no    |
 | listener_arn           | Listener ARN from ALB                    | `string`    | -       |   yes    |
@@ -51,6 +52,7 @@ module "lb_target_group" {
   environment             = "production"
   service                 = "api"
   port                    = "80"
+  target_type             = "ip"
   vpc_id                  = "vpc-12345678"
   application_status_code = 200
   listener_arn            = "arn:aws:elasticloadbalancing:region:account-id:listener/app/alb-name/arn-id"
