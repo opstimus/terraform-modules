@@ -13,6 +13,12 @@ variable "name" {
   description = "Group name | i.e api"
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource."
+  default     = {}
+}
+
 variable "prefix" {
   type        = string
   description = "Service prefix | i.e ecs"
