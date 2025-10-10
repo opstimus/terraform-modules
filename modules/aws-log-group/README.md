@@ -26,12 +26,14 @@ This Terraform module creates an AWS CloudWatch Log Group with a customizable na
 | name             | Log group name (e.g., api)                   | `string`  | -       |   yes    |
 | prefix           | Service prefix (e.g., ecs)                   | `string`  | -       |   yes    |
 | retention_in_days| Log retention period in days                 | `number`  | 180     |    no    |
+| tags             | tags                                         | `map(string)` | -   |    no    |
 
 ## Outputs
 
 | Name      | Description           |
 |-----------|-----------------------|
 | log_group | The name of the log group |
+| log_group_arn | ARN value of log group |
 
 ## Usage examples
 
@@ -45,6 +47,10 @@ module "cloudwatch_log_group" {
   name              = "api"
   prefix            = "ecs"
   retention_in_days = 365
+  tags = {
+    Project     = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```
 
