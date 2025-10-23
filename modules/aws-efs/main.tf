@@ -2,7 +2,12 @@ resource "aws_efs_file_system" "main" {
   creation_token = "${var.project}-${var.environment}-${var.name}"
   encrypted      = var.kms_key_id != null ? true : false
   kms_key_id     = var.kms_key_id
-  tags           = var.tags
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-${var.name}"
+    },
+    var.tags
+  )
 }
 
 resource "aws_security_group" "main" {
