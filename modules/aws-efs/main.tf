@@ -1,5 +1,8 @@
 resource "aws_efs_file_system" "main" {
   creation_token = "${var.project}-${var.environment}-${var.name}"
+  encrypted      = var.kms_key_id != null ? true : false
+  kms_key_id     = var.kms_key_id
+  tags           = var.tags
 }
 
 resource "aws_security_group" "main" {
@@ -20,6 +23,7 @@ resource "aws_security_group" "main" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  tags = var.tags
 }
 
 resource "aws_efs_mount_target" "main" {

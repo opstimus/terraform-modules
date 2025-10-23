@@ -24,6 +24,7 @@ This Terraform module creates a EFS along with mount targets and its own securit
 | project            | Project name              | `string` | -           | yes      |
 | environment        | Environment name          | `string` | -           | yes      |
 | name               | Name of service           | `string` | -           | yes      |
+| kms_key_id         | ARN value of KMS          | `string` | -           | no       |
 | subnet_ids         | Public / Private subnets Ids | `list(string)` | -  | yes      |
 
 ## Outputs
@@ -45,6 +46,7 @@ module "efs" {
   project         = "myproject"
   environment     = "production"
   name            = "store"
+  kms_key_id      = "arn:aws:kms:arnValue"
   subnet_ids      = ["subnet-123", "subnet-456"]
 }
 ```
