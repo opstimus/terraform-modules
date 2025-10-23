@@ -18,6 +18,11 @@ variable "subnet_ids" {
   description = "list of Subnet IDs where EFS mount targets will be created"
 }
 
+variable "kms_key_id" {
+  type        = string
+  description = "ARN value of KMS key"
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map of tags to assign to the resource."
