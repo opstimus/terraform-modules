@@ -35,6 +35,7 @@ This Terraform module creates a EFS along with mount targets and its own securit
 |----------------|---------------------------|
 | efs_arn        | The ARN of the efs        |
 | efs_dns_name   | The DNS value of efs      |
+| efs_id         | The ID of efs             |
 
 
 ## Usage examples
