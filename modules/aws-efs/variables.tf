@@ -13,14 +13,24 @@ variable "name" {
   description = "Service name"
 }
 
-variable "subnet_ids" {
-  type        = list(string)
-  description = "list of Subnet IDs where EFS mount targets will be created"
-}
-
 variable "kms_key_id" {
   type        = string
   description = "ARN value of KMS key"
+}
+
+variable "vpc_id" {
+  type        = string
+  description = "VPC ID"
+}
+
+variable "vpc_cidr" {
+  type        = string
+  description = "CIDR value of VPC"
+}
+
+variable "subnet_ids" {
+  type        = list(string)
+  description = "list of Subnet IDs where EFS mount targets will be created"
 }
 
 variable "tags" {
