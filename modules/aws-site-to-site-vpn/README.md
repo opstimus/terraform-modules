@@ -1,6 +1,3 @@
-# terraform-aws-site-to-site-vpn
-terraform-aws-site-to-site-vpn
-
 # Site-to-Site VPN Module
 
 ## Description
