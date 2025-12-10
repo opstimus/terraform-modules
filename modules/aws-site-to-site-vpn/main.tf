@@ -28,8 +28,8 @@ resource "aws_cloudwatch_log_group" "tunnel2" {
 }
 
 resource "aws_vpn_connection" "main" {
-  vpn_gateway_id                       = aws_vpn_gateway.main[0].id
-  customer_gateway_id                  = aws_customer_gateway.main[0].id
+  vpn_gateway_id                       = aws_vpn_gateway.main.id
+  customer_gateway_id                  = aws_customer_gateway.main.id
   type                                 = "ipsec.1"
   static_routes_only                   = true
   local_ipv4_network_cidr              = var.local_ipv4_network_cidr
