@@ -3,12 +3,12 @@ locals {
 }
 
 resource "aws_security_group" "main" {
-  name        = "${var.project}-${var.environment}-alb"
-  description = "${var.project}-${var.environment}-alb"
+  name        = "${var.project}-${var.environment}-${local.alb_name_suffix}-alb"
+  description = "${var.project}-${var.environment}-${local.alb_name_suffix}-alb"
   vpc_id      = var.vpc_id
   tags = merge(
     {
-      Name = "${var.project}-${var.environment}-alb"
+      Name = "${var.project}-${var.environment}-${local.alb_name_suffix}-alb"
     },
     var.tags
   )

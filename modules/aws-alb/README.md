@@ -32,6 +32,7 @@ This Terraform module creates an Application Load Balancer (ALB) along with a se
 | internal        | Whether to create an internal ALB       | `bool`        | -       |   yes    |
 | certificate_arn | ACM certificate ARN for HTTPS           | `string`      | -       |   yes    |
 | idle_timeout    | Idle timeout in seconds (up to 4000)    | `number`      | 60      |    no    |
+| tags            | tags                                    | `map(string)` | -       |    no    |
 
 ## Outputs
 
@@ -53,5 +54,9 @@ module "alb" {
   internal        = false
   certificate_arn = "arn:aws:acm:region:account:certificate/certificate-id"
   idle_timeout    = 60
+  tags = {
+    Project     = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```
