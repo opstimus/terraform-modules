@@ -51,15 +51,8 @@ resource "aws_ecr_repository_policy" "main" {
   policy     = data.aws_iam_policy_document.main.json
 }
 
-resource "aws_iam_user" "main" {
-  count = var.create_iam_user ? 1 : 0
-  name  = "${var.project}-${var.service}-ecr"
-}
-
-resource "aws_iam_user_policy" "main" {
-  count = var.create_iam_user ? 1 : 0
-  name  = "${var.project}-${var.service}-ecr-policy"
-  user  = aws_iam_user.main[0].name
+resource "aws_iam_policy" "main" {
+  name = "${var.project}-${var.service}-ecr-policy"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -92,4 +85,56 @@ resource "aws_iam_user_policy" "main" {
       }
     ]
   })
+}
+
+resource "aws_iam_user" "main" {
+  count = var.create_iam_user ? 1 : 0
+  name  = "${var.project}-${var.service}-ecr"
+}
+
+resource "aws_iam_user_policy_attachment" "main" {
+  count      = var.create_iam_user ? 1 : 0
+  user       = aws_iam_user.main[0].name
+  policy_arn = aws_iam_policy.main.arn
+}
+
+data "aws_caller_identity" "current" {}
+
+data "aws_iam_policy_document" "role_trust" {
+  count = var.create_iam_role ? 1 : 0
+
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Federated"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"]
+    }
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = var.github_oidc_subjects
+    }
+  }
+}
+
+resource "aws_iam_role" "main" {
+  count              = var.create_iam_role ? 1 : 0
+  name               = "${var.project}-${var.service}-ecr"
+  assume_role_policy = data.aws_iam_policy_document.role_trust[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "main" {
+  count      = var.create_iam_role ? 1 : 0
+  role       = aws_iam_role.main[0].name
+  policy_arn = aws_iam_policy.main.arn
 }

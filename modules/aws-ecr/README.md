@@ -2,7 +2,7 @@
 
 ## Description
 
-This Terraform module creates an Amazon ECR (Elastic Container Registry) repository and configures its policies. It supports setting image tag mutability, image scanning on push, and granting access to specified AWS accounts.
+This Terraform module creates an Amazon ECR (Elastic Container Registry) repository and configures its policies. It supports setting image tag mutability, image scanning on push, and granting access to specified AWS accounts. Optionally creates an IAM managed policy that can be attached to an IAM user or IAM role for GitHub Actions OIDC authentication.
 
 ## Requirements
 
@@ -26,7 +26,9 @@ This Terraform module creates an Amazon ECR (Elastic Container Registry) reposit
 | image_tag_mutability | Tag mutability for images (`true` for IMMUTABLE)    | bool   | true    |    no    |
 | scan_on_push        | Enable image scanning on push                        | bool   | false   |    no    |
 | account_ids         | List of AWS account IDs that can access the repository | list   | -       |   yes    |
-| create_iam_user     | Enable to create IAM user for ECR tasks              | bool   | false   | no       |
+| create_iam_user     | Enable to create IAM user for ECR tasks              | bool   | false   |    no    |
+| create_iam_role     | Enable to create IAM role for GitHub Actions OIDC    | bool   | false   |    no    |
+| github_oidc_subjects | List of GitHub OIDC subjects (e.g., `repo:owner/repo:ref:refs/heads/main`) | list(string) | [] |    no    |
 
 ## Outputs
 
@@ -38,8 +40,6 @@ This Terraform module creates an Amazon ECR (Elastic Container Registry) reposit
 
 ### Basic ECR Repository Creation
 
-This example demonstrates how to use the module to create an ECR repository with specific configurations.
-
 ```hcl
 module "ecr_repository" {
   source                = "github.com/opstimus/terraform-aws-ecr?ref=v<RELEASE>"
@@ -50,6 +50,24 @@ module "ecr_repository" {
   scan_on_push          = true
   account_ids           = ["123456789012", "210987654321"]
   create_iam_user       = false
+  create_iam_role       = false
+}
+```
+
+### With GitHub Actions IAM Role
+
+```hcl
+module "ecr_repository" {
+  source                = "github.com/opstimus/terraform-aws-ecr?ref=v<RELEASE>"
+
+  project               = "my-project"
+  service               = "backend"
+  account_ids           = ["123456789012"]
+  create_iam_role       = true
+  github_oidc_subjects  = [
+    "repo:owner/repo:ref:refs/heads/main",
+    "repo:owner/repo:pull_request"
+  ]
 }
 ```
 
