@@ -117,7 +117,11 @@ resource "aws_instance" "github_runner" {
     apt-get upgrade -y
 
     # Install dependencies
-    apt-get install -y curl jq unzip awscli
+    apt-get install -y curl jq unzip
+
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    ./aws/install
 
     # Get GitHub token from Secrets Manager using instance IAM role
     GITHUB_TOKEN=$(aws secretsmanager get-secret-value --secret-id "${local.github_token_secret_name}" --region "${var.deploy_region}" --query 'SecretString' --output text)
