@@ -117,7 +117,7 @@ resource "aws_instance" "github_runner" {
     apt-get upgrade -y
 
     # Install dependencies
-    apt-get install -y curl jq unzip
+    apt-get install -y curl jq unzip nodejs
 
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
     unzip awscliv2.zip
