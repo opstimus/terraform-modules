@@ -107,7 +107,7 @@ resource "aws_instance" "github_runner" {
   }
 
   user_data_replace_on_change = true
-  user_data = base64encode(<<-EOF
+  user_data                   = <<-EOF
     #!/bin/bash
     set -e
 
@@ -141,6 +141,7 @@ resource "aws_instance" "github_runner" {
     fi
 
     # Create actions-runner directory
+    cd /opt
     mkdir actions-runner && cd actions-runner
 
     # Download the latest runner
@@ -156,7 +157,6 @@ resource "aws_instance" "github_runner" {
     # Run the runner (not as a service since instance is temporary)
     ./run.sh
   EOF
-  )
 
   metadata_options {
     http_endpoint = "enabled"
