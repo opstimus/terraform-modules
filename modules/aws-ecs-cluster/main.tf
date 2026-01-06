@@ -1,6 +1,5 @@
 resource "aws_iam_role" "task_execution" {
-  name                = "${var.project}-${var.environment}-ecs-task-exec"
-  managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy", aws_iam_policy.main.arn]
+  name = "${var.project}-${var.environment}-ecs-task-exec"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -15,6 +14,16 @@ resource "aws_iam_role" "task_execution" {
       },
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "task_execution_aws_managed" {
+  role       = aws_iam_role.task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "task_execution_custom" {
+  role       = aws_iam_role.task_execution.name
+  policy_arn = aws_iam_policy.main.arn
 }
 
 resource "aws_iam_policy" "main" {
