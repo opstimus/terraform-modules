@@ -30,6 +30,7 @@ This Terraform module provisions an AWS Load Balancer target group along with li
 | target_type            | Target type (i.e. ip, instance, lambda)  | `string`    | ip      |   yes    |
 | vpc_id                 | VPC ID                                   | `string`    | -       |   yes    |
 | application_status_code| Application health check status code     | `number`    | 200     |    no    |
+| health_check_path      | Health check path                        | `string`    | /       |    no    |
 | listener_arn           | Listener ARN from ALB                    | `string`    | -       |   yes    |
 | priority               | Listener rule priority number            | `number`    | 100     |    no    |
 | host_headers           | Service URLs (i.e. api.domain.com)       | `list(any)` | -       |   yes    |
@@ -55,6 +56,7 @@ module "lb_target_group" {
   target_type             = "ip"
   vpc_id                  = "vpc-12345678"
   application_status_code = 200
+  health_check_path       = "/health"
   listener_arn            = "arn:aws:elasticloadbalancing:region:account-id:listener/app/alb-name/arn-id"
   listener_rules = {
     rule1 = {

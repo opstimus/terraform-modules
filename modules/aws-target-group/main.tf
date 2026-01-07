@@ -11,6 +11,7 @@ resource "aws_lb_target_group" "main" {
   )
 
   health_check {
+    path    = var.health_check_path
     matcher = var.application_status_code
   }
 

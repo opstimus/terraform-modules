@@ -35,6 +35,12 @@ variable "application_status_code" {
   default     = 200
 }
 
+variable "health_check_path" {
+  type        = string
+  description = "Health check path"
+  default     = "/"
+}
+
 variable "listener_arn" {
   type        = string
   description = "Listerner ARN from ALB"
