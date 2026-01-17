@@ -31,10 +31,12 @@ resource "aws_iam_role" "main" {
       },
     ]
   })
+}
 
-  inline_policy {
-    name = "${var.project}-${var.environment}-${var.service}-task"
+resource "aws_iam_role_policy" "main" {
+  count = length(var.task_role_policy) != 0 ? 1 : 0
+  name  = "${var.project}-${var.environment}-${var.service}-task"
+  role  = aws_iam_role.main[0].id
 
-    policy = var.task_role_policy
-  }
+  policy = var.task_role_policy
 }
