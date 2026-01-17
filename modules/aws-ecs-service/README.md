@@ -43,6 +43,7 @@ This Terraform module creates an ECS Service with optional CloudWatch Alarms for
 | capacity_provider_fargate_base       | Base capacity for FARGATE capacity provider       | `number`       | `1`     | no       |
 | capacity_provider_fargate_weight     | Weight for FARGATE capacity provider              | `number`       | `1`     | no       |
 | capacity_provider_fargate_spot_weight| Weight for FARGATE_SPOT capacity provider         | `number`       | `0`     | no       |
+| force_new_deployment                 | Force a new deployment of the service             | `bool`         | `false` | no       |
 
 ## Outputs
 
@@ -75,6 +76,7 @@ module "ecs_service" {
   enable_cpu_alarm    = true
   enable_memory_alarm = true
   alarm_sns_arn       = "arn:aws:sns:region:account-id:example-topic"
+  force_new_deployment = false
 }
 ```
 

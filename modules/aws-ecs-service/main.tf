@@ -5,6 +5,7 @@ resource "aws_ecs_service" "main" {
   desired_count                      = var.desired_count
   enable_execute_command             = true
   wait_for_steady_state              = true
+  force_new_deployment               = var.force_new_deployment
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
 
