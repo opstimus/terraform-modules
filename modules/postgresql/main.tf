@@ -41,7 +41,7 @@ resource "postgresql_default_privileges" "tables" {
   role        = postgresql_role.user.name
   schema      = "public"
   owner       = var.master_username
-  privileges  = ["ALL"]
+  privileges  = ["DELETE", "INSERT", "MAINTAIN", "REFERENCES", "SELECT", "TRIGGER", "TRUNCATE", "UPDATE"]
   object_type = "table"
 }
 
@@ -51,7 +51,7 @@ resource "postgresql_default_privileges" "sequences" {
   role        = postgresql_role.user.name
   schema      = "public"
   owner       = var.master_username
-  privileges  = ["ALL"]
+  privileges  = ["SELECT", "UPDATE", "USAGE"]
   object_type = "sequence"
 }
 
@@ -65,6 +65,8 @@ resource "aws_secretsmanager_secret_version" "user_credentials" {
   secret_string = jsonencode({
     username = postgresql_role.user.name
     password = random_password.user_password.result
+    database = postgresql_database.database.name
+    host     = var.host
   })
 }
 

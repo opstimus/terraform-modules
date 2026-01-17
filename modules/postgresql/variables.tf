@@ -28,3 +28,7 @@ variable "master_username" {
   description = "Master database username (used as owner for default privileges)"
 }
 
+variable "host" {
+  type        = string
+  description = "PostgreSQL host"
+}
