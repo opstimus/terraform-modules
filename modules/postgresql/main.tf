@@ -57,7 +57,7 @@ resource "postgresql_default_privileges" "sequences" {
 
 # Store user credentials in Secrets Manager
 resource "aws_secretsmanager_secret" "user_credentials" {
-  name = "${var.project}-${var.environment}-${var.service_name}-db-credentials"
+  name = "${var.project}/${var.environment}/${var.service_name}/db-credentials"
 }
 
 resource "aws_secretsmanager_secret_version" "user_credentials" {
