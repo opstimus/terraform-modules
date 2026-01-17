@@ -215,3 +215,22 @@ variable "scale_in_cooldown" {
   description = "Cooldown period in seconds after a scale in activity"
   default     = 900
 }
+
+# Aurora Serverless v2
+variable "enable_serverless_v2" {
+  type        = bool
+  description = "Enable Aurora Serverless v2 scaling"
+  default     = false
+}
+
+variable "serverless_v2_min_capacity" {
+  type        = number
+  description = "Minimum Aurora Capacity Units (ACU) for Serverless v2. Each ACU is a combination of processing and memory capacity. Valid values: 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256"
+  default     = 0.5
+}
+
+variable "serverless_v2_max_capacity" {
+  type        = number
+  description = "Maximum Aurora Capacity Units (ACU) for Serverless v2. Each ACU is a combination of processing and memory capacity. Valid values: 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256"
+  default     = 4
+}

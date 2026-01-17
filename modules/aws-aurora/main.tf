@@ -111,6 +111,14 @@ resource "aws_rds_cluster" "main" {
   kms_key_id                      = var.storage_encrypted == true ? var.kms_key_id : null
   network_type                    = var.network_type
   vpc_security_group_ids          = [aws_security_group.db.id]
+
+  dynamic "serverlessv2_scaling_configuration" {
+    for_each = var.enable_serverless_v2 ? [1] : []
+    content {
+      min_capacity = var.serverless_v2_min_capacity
+      max_capacity = var.serverless_v2_max_capacity
+    }
+  }
 }
 
 resource "aws_rds_cluster_instance" "cluster_instances" {
@@ -120,7 +128,7 @@ resource "aws_rds_cluster_instance" "cluster_instances" {
   cluster_identifier              = aws_rds_cluster.main.id
   engine                          = aws_rds_cluster.main.engine
   engine_version                  = aws_rds_cluster.main.engine_version
-  instance_class                  = var.instancetype
+  instance_class                  = var.enable_serverless_v2 ? "db.serverless" : var.instancetype
   db_subnet_group_name            = aws_db_subnet_group.main.name
   db_parameter_group_name         = length(aws_rds_cluster_parameter_group.main) > 0 ? aws_rds_cluster_parameter_group.main[0].name : "default.${var.parameter_group_family}"
   auto_minor_version_upgrade      = false
@@ -239,7 +247,7 @@ resource "aws_iam_role_policy" "rds_proxy" {
         ],
         Condition = {
           "StringEquals" = {
-            "kms:ViaService" = "secretsmanager.${data.aws_region.current.name}.amazonaws.com"
+            "kms:ViaService" = "secretsmanager.${data.aws_region.current.id}.amazonaws.com"
           }
         }
       }

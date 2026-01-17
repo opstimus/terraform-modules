@@ -39,3 +39,15 @@ resource "aws_ssm_parameter" "rds_proxy_readonly_endpoint" {
   type  = "String"
   value = aws_db_proxy_endpoint.main[0].endpoint
 }
+
+resource "aws_secretsmanager_secret" "master_credentials" {
+  name = "${var.project}/${var.environment}/base/aurora${local.ssm_name}/master_credentials"
+}
+
+resource "aws_secretsmanager_secret_version" "master_credentials" {
+  secret_id = aws_secretsmanager_secret.master_credentials.id
+  secret_string = jsonencode({
+    username = var.master_username
+    password = random_password.main.result
+  })
+}

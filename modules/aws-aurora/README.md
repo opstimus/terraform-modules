@@ -66,6 +66,9 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 | cpu_target_value             | CPU target value for autoscaling                         | `number`          | `80`                 | no       |
 | scale_out_cooldown           | Cooldown period in seconds after a scale out activity    | `number`          | `300`                | no       |
 | scale_in_cooldown            | Cooldown period in seconds after a scale in activity     | `number`          | `900`                | no       |
+| enable_serverless_v2         | Enable Aurora Serverless v2 scaling                      | `bool`            | `false`              | no       |
+| serverless_v2_min_capacity   | Minimum Aurora Capacity Units (ACU) for Serverless v2    | `number`          | `0.5`                | no       |
+| serverless_v2_max_capacity   | Maximum Aurora Capacity Units (ACU) for Serverless v2    | `number`          | `4`                  | no       |
 
 ## Outputs
 
@@ -99,6 +102,41 @@ module "aurora_rds_cluster" {
 }
 ```
 
+### Example 2: Aurora Serverless v2
+
+```hcl
+module "aurora_rds_cluster" {
+  source = "https://github.com/opstimus/terraform-aws-aurora?ref=v<RELEASE>"
+
+  project                       = "my-project"
+  environment                   = "production"
+  vpc_id                        = "vpc-123456"
+  private_subnet_ids            = ["subnet-123", "subnet-456"]
+  vpc_cidr                      = "10.0.0.0/16"
+  engine                        = "aurora-postgresql"
+  engine_version                = "15.4"
+  db_name                       = "mydb"
+  master_username               = "admin"
+  parameter_group_family        = "aurora-postgresql15"
+  storage_encrypted             = true
+  kms_key_id                    = "arn:aws:kms:region:account-id:key/key-id"
+  backup_retention_period       = 7
+  enable_serverless_v2          = true
+  serverless_v2_min_capacity    = 0.5
+  serverless_v2_max_capacity    = 16
+  instance_count                = 0
+}
+```
+
 ## Notes
 
 The name for the created resource follows the pattern `{project}-{environment}-resource-type`.
+
+### Aurora Serverless v2
+
+When `enable_serverless_v2` is set to `true`, the module configures Aurora Serverless v2 scaling. With Serverless v2:
+- The cluster uses `engine_mode = "provisioned"` with serverless v2 scaling configuration
+- Cluster instances use the `db.serverless` instance class automatically
+- Scaling is handled automatically based on the `serverless_v2_min_capacity` and `serverless_v2_max_capacity` values
+- Valid ACU values: 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256
+- You can still use read replicas with Serverless v2 by setting `instance_count > 0`
