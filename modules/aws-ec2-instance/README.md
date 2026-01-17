@@ -40,6 +40,7 @@ This Terraform module provisions an EC2 instance within a specified VPC and subn
 |                      |                                      | cidr_blocks = list(string)  |           |          |
 | key_name             | Key pair name for the instance       | string        | null        |    no    |
 | termination_protection | Enable termination protection       | bool          | false       |    no    |
+| iam_instance_profile | IAM Instance Profile to launch the instance with | string | null | no |
 
 ## Outputs
 

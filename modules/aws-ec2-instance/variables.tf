@@ -94,3 +94,9 @@ variable "tags" {
   description = "A map of tags to assign to the resource."
   default     = {}
 }
+
+variable "iam_instance_profile" {
+  type        = string
+  description = "IAM Instance Profile to launch the instance with"
+  default     = null
+}

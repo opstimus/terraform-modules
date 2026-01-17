@@ -34,6 +34,7 @@ resource "aws_instance" "main" {
   key_name                    = var.key_name != null ? var.key_name : null
   disable_api_termination     = var.termination_protection ? true : false
   associate_public_ip_address = var.associate_public_ip_address
+  iam_instance_profile        = var.iam_instance_profile != null ? var.iam_instance_profile : null
   tags                        = var.tags
   root_block_device {
     delete_on_termination = true
