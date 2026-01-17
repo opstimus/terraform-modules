@@ -26,13 +26,16 @@ This Terraform module creates an AWS IAM Role with an associated role policy. Th
 | name              | Role name                | string | -       |   yes    |
 | assume_role_policy| IAM assume role policy   | string | -       |   yes    |
 | role_policy       | IAM role policy          | string | -       |   yes    |
+| create_instance_profile | Create IAM instance profile for the role | bool | false | no |
 
 ## Outputs
 
-| Name      | Description           |
-|-----------|-----------------------|
-| role_name | The name of the IAM role |
-| role_arn  | The ARN of the IAM role  |
+| Name                 | Description                                |
+|----------------------|--------------------------------------------|
+| role_name            | The name of the IAM role                   |
+| role_arn             | The ARN of the IAM role                    |
+| instance_profile_name| The name of the IAM instance profile (if created) |
+| instance_profile_arn | The ARN of the IAM instance profile (if created) |
 
 ## Usage examples
 
@@ -69,5 +72,6 @@ module "iam_role" {
       }
     ]
   })
+  create_instance_profile = true
 }
 ```
