@@ -2,7 +2,7 @@
 resource "random_password" "user_password" {
   length           = 16
   special          = true
-  override_special = "!#$%&*?"
+  override_special = "!$&*+="
 }
 
 # Create PostgreSQL role/user
