@@ -43,6 +43,7 @@ variable "enable_eip" {
 variable "user_data" {
   type        = string
   description = "Userdata"
+  default     = ""
 }
 
 variable "source_dest_check" {
@@ -63,14 +64,15 @@ variable "vpc_id" {
 }
 
 variable "ingress_rules" {
-  description = "List of security group ingress rules"
-  type = list(object({
+  description = "Map of security group ingress rules"
+  type = map(object({
     from_port   = number
     to_port     = number
-    protocol    = string
-    cidr_blocks = list(string)
+    ip_protocol = string
+    cidr_ipv4   = list(string)
+    description = optional(string)
   }))
-  default = []
+  default = {}
 }
 
 variable "key_name" {

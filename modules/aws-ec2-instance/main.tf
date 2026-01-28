@@ -4,25 +4,33 @@ resource "aws_security_group" "main" {
   description = "${var.project}-${var.environment}-${var.name}"
   vpc_id      = var.vpc_id
   tags        = var.tags
+}
 
-  dynamic "ingress" {
-    for_each = var.ingress_rules
-    content {
-      from_port   = ingress.value.from_port
-      to_port     = ingress.value.to_port
-      protocol    = ingress.value.protocol
-      cidr_blocks = ingress.value.cidr_blocks
-    }
-  }
+resource "aws_vpc_security_group_ingress_rule" "main" {
+  for_each          = var.ingress_rules
+  security_group_id = aws_security_group.main[0].id
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  ip_protocol       = each.value.ip_protocol
+  cidr_ipv4         = each.value.cidr_ipv4[0]
+  description       = try(each.value.description, null)
+  tags              = var.tags
+}
 
-  # All traffic enabled for outbound. Restrict if required
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
+resource "aws_vpc_security_group_egress_rule" "ipv4" {
+  count             = length(var.ingress_rules) > 0 ? 1 : 0
+  security_group_id = aws_security_group.main[0].id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+  tags              = var.tags
+}
+
+resource "aws_vpc_security_group_egress_rule" "ipv6" {
+  count             = length(var.ingress_rules) > 0 ? 1 : 0
+  security_group_id = aws_security_group.main[0].id
+  ip_protocol       = "-1"
+  cidr_ipv6         = "::/0"
+  tags              = var.tags
 }
 
 resource "aws_instance" "main" {
