@@ -199,16 +199,29 @@ resource "aws_vpc_security_group_ingress_rule" "nat_ingress" {
   )
 }
 
-resource "aws_vpc_security_group_egress_rule" "nat_egress" {
+resource "aws_vpc_security_group_egress_rule" "nat_egress_ipv4" {
   count             = var.nat == "instance" ? 1 : 0
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
+  security_group_id = aws_security_group.nat_instance[0].id
+
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-egress-ipv4"
+    },
+    var.tags
+  )
+}
+
+resource "aws_vpc_security_group_egress_rule" "nat_egress_ipv6" {
+  count             = var.nat == "instance" ? 1 : 0
+  ip_protocol       = "-1"
   cidr_ipv6         = "::/0"
   security_group_id = aws_security_group.nat_instance[0].id
 
   tags = merge(
     {
-      Name = "${var.project}-${var.environment}-nat-egress"
+      Name = "${var.project}-${var.environment}-nat-egress-ipv6"
     },
     var.tags
   )
