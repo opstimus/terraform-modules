@@ -43,6 +43,8 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 | vpc_cidr       | The CIDR block of the VPC |
 | public_subnets | List of public subnet IDs |
 | private_subnets | List of private subnet IDs |
+| public_route_tables_id  | Public route table ID|
+| private_route_tables_ids | List of private route table IDs |
 
 ## Usage examples
 

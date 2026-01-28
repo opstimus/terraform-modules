@@ -14,8 +14,12 @@ output "private_subnets" {
   value = join(",", [aws_subnet.private_1.id, aws_subnet.private_2.id, aws_subnet.private_3.id])
 }
 
-output "route_tables_ids" {
-  value = join(",", [aws_default_route_table.public.id, aws_route_table.private_1.id, aws_route_table.private_2.id, aws_route_table.private_3.id])
+output "public_route_tables_id" {
+  value = aws_default_route_table.public.id
+}
+
+output "private_route_tables_ids" {
+  value = join(",", [aws_route_table.private_1.id, aws_route_table.private_2.id, aws_route_table.private_3.id])
 }
 
 resource "aws_ssm_parameter" "vpc_id" {
@@ -42,8 +46,14 @@ resource "aws_ssm_parameter" "private_subnets_ids" {
   value = join(",", [aws_subnet.private_1.id, aws_subnet.private_2.id, aws_subnet.private_3.id])
 }
 
-resource "aws_ssm_parameter" "route_tables_ids" {
-  name  = "/${var.project}/${var.environment}/central/vpc/routeTableIds"
+resource "aws_ssm_parameter" "public_route_tables_ids" {
+  name  = "/${var.project}/${var.environment}/central/vpc/publicRouteTableIds"
   type  = "StringList"
-  value = join(",", [aws_default_route_table.public.id, aws_route_table.private_1.id, aws_route_table.private_2.id, aws_route_table.private_3.id])
+  value = aws_default_route_table.public.id
+}
+
+resource "aws_ssm_parameter" "private_route_tables_ids" {
+  name  = "/${var.project}/${var.environment}/central/vpc/privateRouteTableIds"
+  type  = "StringList"
+  value = join(",", [aws_route_table.private_1.id, aws_route_table.private_2.id, aws_route_table.private_3.id])
 }
