@@ -9,5 +9,5 @@ resource "aws_ses_email_identity" "main" {
 }
 
 resource "aws_ses_domain_identity_verification" "main" {
-  domain = aws_ses_domain_identity.main.id
+  domain = aws_ses_domain_identity.main[0].id
 }
