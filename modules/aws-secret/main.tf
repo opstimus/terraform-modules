@@ -1,5 +1,6 @@
 resource "aws_secretsmanager_secret" "main" {
   name = "${var.project}-${var.environment}-${var.name}"
+  tags = var.tags
 }
 
 resource "random_password" "main" {

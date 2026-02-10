@@ -13,6 +13,12 @@ variable "name" {
   description = "Secret name | i.e mail-password"
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource."
+  default     = {}
+}
+
 variable "secret_string" {
   type    = string
   default = null
