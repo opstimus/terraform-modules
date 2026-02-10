@@ -9,13 +9,13 @@ This Terraform module creates a EFS along with mount targets and its own securit
 | Name       | Version  |
 |------------|----------|
 | terraform  | >= 1.3.0 |
-| aws        | >= 4.0   |
+| aws        | >= 6.0   |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws  | >= 4.0  |
+| aws  | >= 6.0  |
 
 ## Inputs
 
@@ -27,7 +27,7 @@ This Terraform module creates a EFS along with mount targets and its own securit
 | kms_key_id         | ARN value of KMS          | `string` | -           | no       |
 | vpc_id             | VPC ID                    | `string` | -           | yes      |
 | vpc_cidr           | VPC CIDR block            | `string` | -           | yes      |
-| subnet_ids         | Public / Private subnets Ids | `list(string)` | -  | yes      |
+| subnet_ids         | Public / Private subnets Ids | `list(string)` | {}  | yes      |
 
 ## Outputs
 
@@ -50,7 +50,7 @@ module "efs" {
   name            = "store"
   kms_key_id      = "arn:aws:kms:arnValue"
   vpc_id          = "vpc-123456789"
-  vpc_cidr        = "10.10.0.0/0"
+  vpc_cidr        = "10.10.0.0/16"
   subnet_ids      = ["subnet-123", "subnet-456"]
 }
 ```
