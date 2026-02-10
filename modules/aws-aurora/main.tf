@@ -10,24 +10,32 @@ resource "aws_security_group" "db" {
   description = "${var.project}-${var.environment}${local.name}-db"
   vpc_id      = var.vpc_id
 
-  ingress {
-    from_port   = var.port
-    to_port     = var.port
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}${local.name}-db"
+    },
+    var.tags
+  )
+}
 
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
+resource "aws_vpc_security_group_ingress_rule" "ingress_vpc" {
+  security_group_id = aws_security_group.db.id
+  ip_protocol       = "tcp"
+  from_port         = var.port
+  to_port           = var.port
+  cidr_ipv4         = var.vpc_cidr
+}
 
-  tags = {
-    Name = "${var.project}-${var.environment}${local.name}-db"
-  }
+resource "aws_vpc_security_group_egress_rule" "ipv4" {
+  security_group_id = aws_security_group.db.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_egress_rule" "ipv6" {
+  security_group_id = aws_security_group.db.id
+  ip_protocol       = "-1"
+  cidr_ipv6         = "::/0"
 }
 
 resource "random_password" "main" {
@@ -48,9 +56,12 @@ resource "aws_db_subnet_group" "main" {
   name       = "${var.project}-${var.environment}${local.name}-aurora"
   subnet_ids = var.private_subnet_ids
 
-  tags = {
-    Name = "${var.project}-${var.environment}${local.name}"
-  }
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}${local.name}"
+    },
+    var.tags
+  )
 }
 
 resource "aws_db_parameter_group" "main" {
@@ -68,6 +79,7 @@ resource "aws_db_parameter_group" "main" {
   lifecycle {
     create_before_destroy = true
   }
+  tags = var.tags
 }
 
 resource "aws_rds_cluster_parameter_group" "main" {
@@ -85,6 +97,7 @@ resource "aws_rds_cluster_parameter_group" "main" {
   lifecycle {
     create_before_destroy = true
   }
+  tags = var.tags
 }
 
 resource "time_static" "main" {}
@@ -119,6 +132,7 @@ resource "aws_rds_cluster" "main" {
       max_capacity = var.serverless_v2_max_capacity
     }
   }
+  tags = var.tags
 }
 
 resource "aws_rds_cluster_instance" "cluster_instances" {
@@ -134,6 +148,7 @@ resource "aws_rds_cluster_instance" "cluster_instances" {
   auto_minor_version_upgrade      = false
   performance_insights_enabled    = var.performance_insights_enabled
   performance_insights_kms_key_id = var.performance_insights_enabled ? var.kms_key_id : null
+  tags                            = var.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
@@ -154,6 +169,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   dimensions = {
     DBInstanceIdentifier = aws_rds_cluster.main.id
   }
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
@@ -174,11 +190,13 @@ resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
   dimensions = {
     DBInstanceIdentifier = aws_rds_cluster.main.id
   }
+  tags = var.tags
 }
 
 resource "aws_secretsmanager_secret" "rds_proxy" {
   count = var.enable_rds_proxy ? 1 : 0
   name  = "${var.project}-${var.environment}${local.name}-db-rds-proxy"
+  tags  = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "rds_proxy" {
@@ -272,6 +290,7 @@ resource "aws_db_proxy" "main" {
     iam_auth    = "DISABLED"
     secret_arn  = aws_secretsmanager_secret.rds_proxy[0].arn
   }
+  tags = var.tags
 }
 
 resource "aws_db_proxy_default_target_group" "main" {

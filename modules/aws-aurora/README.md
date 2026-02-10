@@ -9,16 +9,15 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 | Name       | Version   |
 |------------|-----------|
 | terraform  | >= 1.3.0  |
-| aws        | >= 4.0    |
+| aws        | >= 6.0    |
 | random     | >= 3.4.0  |
 | time       | >= 0.9    |
-| external   | >= 2.2.0  |
 
 ## Providers
 
 | Name  | Version   |
 |-------|-----------|
-| aws   | >= 4.0    |
+| aws   | >= 6.0    |
 | random| >= 3.4.0  |
 | time  | >= 0.9    |
 
@@ -69,6 +68,7 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 | enable_serverless_v2         | Enable Aurora Serverless v2 scaling                      | `bool`            | `false`              | no       |
 | serverless_v2_min_capacity   | Minimum Aurora Capacity Units (ACU) for Serverless v2    | `number`          | `0.5`                | no       |
 | serverless_v2_max_capacity   | Maximum Aurora Capacity Units (ACU) for Serverless v2    | `number`          | `4`                  | no       |
+| tags                         | tags                                                     | `map(string)`     | -                    | no       |
 
 ## Outputs
 
@@ -107,7 +107,6 @@ module "aurora_rds_cluster" {
 ```hcl
 module "aurora_rds_cluster" {
   source = "https://github.com/opstimus/terraform-aws-aurora?ref=v<RELEASE>"
-
   project                       = "my-project"
   environment                   = "production"
   vpc_id                        = "vpc-123456"
@@ -125,6 +124,10 @@ module "aurora_rds_cluster" {
   serverless_v2_min_capacity    = 0.5
   serverless_v2_max_capacity    = 16
   instance_count                = 0
+  tags = {
+    Project = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```
 
