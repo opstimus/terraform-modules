@@ -9,13 +9,13 @@ This Terraform module provisions an AWS SQS queue and optional dead-letter queue
 | Name      | Version   |
 |-----------|-----------|
 | terraform | >= 1.3.0  |
-| aws       | >= 4.0    |
+| aws       | >= 6.0    |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws  | >= 4.0  |
+| aws  | >= 6.0  |
 
 ## Inputs
 
@@ -35,6 +35,7 @@ This Terraform module provisions an AWS SQS queue and optional dead-letter queue
 | max_receive_count            | The number of times a message is received from a queue before being moved to the dead-letter queue               | `number` | `5`      |    no    |
 | enable_high_throughput       | Enable high throughput mode for FIFO queues                                                                     | `bool`   | `false`  |    no    |
 | message_retention_seconds_dlq| The number of seconds Amazon SQS retains a message in the DLQ                                                   | `number` | `1209600`|    no    |
+| tags                         | tags                                                                                                            | `map(string)` | {}       |    no    |
 
 ## Outputs
 
@@ -52,7 +53,6 @@ This Terraform module provisions an AWS SQS queue and optional dead-letter queue
 ```hcl
 module "sqs" {
   source  = "https://github.com/opstimus/terraform-aws-sqs?ref=v<RELEASE>"
-
   project                      = "my-project"
   environment                  = "production"
   name                         = "service-queue"
@@ -62,5 +62,9 @@ module "sqs" {
   message_retention_seconds    = 1209600
   max_receive_count            = 5
   enable_high_throughput       = true
+  tags = {
+    Project = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```

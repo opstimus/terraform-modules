@@ -12,6 +12,7 @@ resource "aws_sqs_queue" "main" {
   deduplication_scope        = var.enable_fifo == true && var.enable_high_throughput == true ? "messageGroup" : ((var.enable_fifo == true && var.enable_high_throughput == false) ? "queue" : null)
   fifo_throughput_limit      = var.enable_fifo == true && var.enable_high_throughput == true ? "perMessageGroupId" : ((var.enable_fifo == true && var.enable_high_throughput == false) ? "perQueue" : null)
   sqs_managed_sse_enabled    = true
+  tags                       = var.tags
 }
 
 data "aws_iam_policy_document" "main" {
@@ -50,6 +51,7 @@ resource "aws_sqs_queue" "dlq" {
   fifo_queue                = var.enable_fifo
   message_retention_seconds = var.message_retention_seconds_dlq
   sqs_managed_sse_enabled   = true
+  tags                      = var.tags
 }
 
 data "aws_iam_policy_document" "dlq" {

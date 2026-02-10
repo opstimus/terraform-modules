@@ -13,6 +13,12 @@ variable "name" {
   description = "Service name"
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource."
+  default     = {}
+}
+
 variable "enable_dlq" {
   type    = bool
   default = false
