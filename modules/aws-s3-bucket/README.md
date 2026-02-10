@@ -9,13 +9,13 @@ This Terraform module provisions an AWS S3 bucket with server-side encryption (S
 | Name      | Version  |
 |-----------|----------|
 | terraform | >= 1.3.0 |
-| aws       | >= 4.0   |
+| aws       | >= 6.0   |
 
 ## Providers
 
 | Name | Version  |
 |------|----------|
-| aws  | >= 4.0   |
+| aws  | >= 6.0   |
 
 ## Inputs
 
@@ -43,5 +43,9 @@ module "s3_bucket" {
   environment       = "production"
   name              = "data"
   enable_versioning = true
+  tags = {
+    Project = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```
