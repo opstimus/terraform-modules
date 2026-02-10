@@ -9,13 +9,13 @@ This Terraform module creates an AWS CloudWatch Log Group with a customizable na
 | Name      | Version  |
 |-----------|----------|
 | terraform | >= 1.3.0 |
-| aws       | >= 4.0   |
+| aws       | >= 6.0   |
 
 ## Providers
 
 | Name | Version  |
 |------|----------|
-| aws  | >= 4.0   |
+| aws  | >= 6.0   |
 
 ## Inputs
 
