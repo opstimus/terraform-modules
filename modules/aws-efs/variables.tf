@@ -16,6 +16,7 @@ variable "name" {
 variable "kms_key_id" {
   type        = string
   description = "ARN value of KMS key"
+  default     = null
 }
 
 variable "vpc_id" {
