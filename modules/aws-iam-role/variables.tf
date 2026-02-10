@@ -14,11 +14,13 @@ variable "name" {
 }
 
 variable "assume_role_policy" {
-  type = string
+  type        = string
+  description = "IAM assume role policy"
 }
 
 variable "role_policy" {
-  type = string
+  type        = string
+  description = "IAM role policy"
 }
 
 variable "create_instance_profile" {
