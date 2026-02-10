@@ -9,15 +9,13 @@ This Terraform module sets up an ECS cluster with necessary IAM roles, security 
 | Name      | Version   |
 |-----------|-----------|
 | terraform | >= 1.3.0  |
-| aws       | >= 4.0    |
-| external | >= 2.2.0 |
+| aws       | >= 6.0    |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws  | >= 4.0  |
-| external | >= 2.2.0 |
+| aws  | >= 6.0  |
 
 ## Inputs
 
@@ -28,6 +26,7 @@ This Terraform module sets up an ECS cluster with necessary IAM roles, security 
 | vpc_id                     | The ID of the VPC                            | string       | -       |   yes    |
 | vpc_cidr                   | The CIDR block of the VPC                    | string       | -       |   yes    |
 | container_insights         | Enable container insights for the cluster    | bool         | false   |    no    |
+| tags                       | tags                                         | `map(string)` | -      |    no    |
 
 ## Outputs
 
@@ -47,12 +46,15 @@ This example shows how to use the ECS cluster module to create an ECS cluster wi
 ```hcl
 module "ecs_cluster" {
   source             = "github.com/opstimus/terraform-aws-ecs-cluster?ref=v<RELEASE>"
-
   project            = "my-project"
   environment        = "dev"
   vpc_id             = "vpc-0bb1c79de3EXAMPLE"
   vpc_cidr           = "10.0.0.0/16"
   container_insights = true
+  tags = {
+    Project     = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```
 

@@ -8,6 +8,12 @@ variable "environment" {
   description = "Environment name"
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource."
+  default     = {}
+}
+
 variable "vpc_id" {
   type = string
 }
