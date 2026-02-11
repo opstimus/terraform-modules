@@ -1,34 +1,34 @@
 # AWS ECS Auto Scaling Scheduled Action Module
 
-## Description 
+## Description
 
 This Terraform module creates an AWS App Autoscaling scheduled action. It allows you to define scheduled scaling actions for AWS ECS services based on a specified schedule.
 
-## Requirements 
+## Requirements
 
-| Name | Version | 
-|------|---------| 
-| terraform | >= 1.3.0 | 
-| aws | >= 4.0 | 
+| Name | Version |
+|------|---------|
+| terraform | >= 1.3.0 |
+| aws | >= 6.0 |
 
-## Providers 
+## Providers
 
-| Name | Version | 
-|------|---------| 
-| aws | >= 4.0 | 
+| Name | Version |
+|------|---------|
+| aws | >= 6.0 |
 
-## Inputs 
+## Inputs
 
-| Name            | Description                   | Type   | Default | Required | 
-|-----------------|-------------------------------|--------|---------|:--------:| 
-| service_name    | Name of the service           | string | -       | yes      | 
-| policy_name     | Name of the policy            | string | -       | yes      | 
-| schedule        | Schedule for scaling action   | string | -       | yes      | 
-| min_capacity    | Minimum capacity              | number | -       | yes      | 
-| max_capacity    | Maximum capacity              | number | -       | yes      | 
-| resource_id     | Resource ID for scaling       | string | -       | yes      | 
+| Name            | Description                   | Type   | Default | Required |
+|-----------------|-------------------------------|--------|---------|:--------:|
+| service_name    | Name of the service           | string | -       | yes      |
+| policy_name     | Name of the policy            | string | -       | yes      |
+| schedule        | Schedule for scaling action   | string | -       | yes      |
+| min_capacity    | Minimum capacity              | number | -       | yes      |
+| max_capacity    | Maximum capacity              | number | -       | yes      |
+| resource_id     | Resource ID for scaling       | string | -       | yes      |
 
-## Usage examples 
+## Usage examples
 
 ### Example 1: Basic usage of the module
 
