@@ -1,44 +1,44 @@
 # AWS ECS Auto Scaling Standard Module
 
-## Description 
+## Description
 
 This Terraform module sets up AWS App Autoscaling targets and policies for ECS services. It manages scaling actions based on CPU and memory utilization metrics, allowing you to maintain optimal performance and resource usage.
 
-## Requirements 
+## Requirements
 
-| Name | Version | 
-|------|---------| 
-| terraform | >= 1.3.0 | 
-| aws | >= 4.0 | 
+| Name | Version |
+|------|---------|
+| terraform | >= 1.3.0 |
+| aws | >= 6.0 |
 
-## Providers 
+## Providers
 
-| Name | Version | 
-|------|---------| 
-| aws | >= 4.0 | 
+| Name | Version |
+|------|---------|
+| aws | >= 6.0 |
 
-## Inputs 
+## Inputs
 
-| Name               | Description                           | Type    | Default | Required | 
-|--------------------|---------------------------------------|---------|---------|:--------:| 
-| cluster_name       | Name of the ECS cluster               | string  | -       | yes      | 
-| service_name       | Name of the ECS service               | string  | -       | yes      | 
-| min_capacity       | Minimum capacity for autoscaling      | number  | -       | yes      | 
-| max_capacity       | Maximum capacity for autoscaling      | number  | -       | yes      | 
-| cpu_target_value   | Target CPU utilization percentage     | number  | 60      | no       | 
-| memory_target_value | Target memory utilization percentage  | number  | 60      | no       | 
-| scale_in_cooldown  | Cooldown period for scale-in actions  | number  | 300     | no       | 
-| scale_out_cooldown | Cooldown period for scale-out actions | number  | 60      | no       | 
+| Name               | Description                           | Type    | Default | Required |
+|--------------------|---------------------------------------|---------|---------|:--------:|
+| cluster_name       | Name of the ECS cluster               | string  | -       | yes      |
+| service_name       | Name of the ECS service               | string  | -       | yes      |
+| min_capacity       | Minimum capacity for autoscaling      | number  | -       | yes      |
+| max_capacity       | Maximum capacity for autoscaling      | number  | -       | yes      |
+| cpu_target_value   | Target CPU utilization percentage     | number  | 60      | no       |
+| memory_target_value | Target memory utilization percentage  | number  | 60      | no       |
+| scale_in_cooldown  | Cooldown period for scale-in actions  | number  | 300     | no       |
+| scale_out_cooldown | Cooldown period for scale-out actions | number  | 60      | no       |
 
-## Outputs 
+## Outputs
 
-| Name                | Description                     | 
-|---------------------|---------------------------------| 
-| resource_id         | The resource ID of the autoscaling target | 
-| scalable_dimension  | The scalable dimension of the autoscaling target | 
-| service_namespace   | The service namespace of the autoscaling target | 
+| Name                | Description                     |
+|---------------------|---------------------------------|
+| resource_id         | The resource ID of the autoscaling target |
+| scalable_dimension  | The scalable dimension of the autoscaling target |
+| service_namespace   | The service namespace of the autoscaling target |
 
-## Usage examples 
+## Usage examples
 
 ### Example 1: Basic usage of the module
 
