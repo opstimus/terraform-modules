@@ -35,7 +35,8 @@ variable "scale_in_cooldown" {
 }
 
 variable "custom_metric_scale_in_cooldown" {
-  type = number
+  type    = number
+  default = null
 }
 
 variable "scale_out_cooldown" {
@@ -44,25 +45,31 @@ variable "scale_out_cooldown" {
 }
 
 variable "custom_metric_scale_out_cooldown" {
-  type = number
+  type    = number
+  default = null
 }
 
 variable "custom_metric_name" {
-  type = string
+  type    = string
+  default = null
 }
 
 variable "custom_metric_namespace" {
-  type = string
+  type    = string
+  default = null
 }
 
 variable "custom_metric_statistic" {
-  type = string
+  type    = string
+  default = null
 }
 
 variable "custom_metric_dimension_name" {
-  type = string
+  type    = string
+  default = null
 }
 
 variable "custom_metric_dimension_value" {
-  type = string
+  type    = string
+  default = null
 }
