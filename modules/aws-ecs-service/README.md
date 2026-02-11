@@ -9,14 +9,13 @@ This Terraform module creates an ECS Service with optional CloudWatch Alarms for
 | Name      | Version  |
 |-----------|----------|
 | terraform | >= 1.3.0 |
-| aws       | >= 4.0   |
-| external  | >= 2.2.0 |
+| aws       | >= 6.0   |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws  | >= 4.0  |
+| aws  | >= 6.0  |
 
 ## Inputs
 
@@ -44,6 +43,7 @@ This Terraform module creates an ECS Service with optional CloudWatch Alarms for
 | capacity_provider_fargate_weight     | Weight for FARGATE capacity provider              | `number`       | `1`     | no       |
 | capacity_provider_fargate_spot_weight| Weight for FARGATE_SPOT capacity provider         | `number`       | `0`     | no       |
 | force_new_deployment                 | Force a new deployment of the service             | `bool`         | `false` | no       |
+| tags                                 | tags                                              | `map(string)`  | `{}`    |    no    |
 
 ## Outputs
 
@@ -57,26 +57,33 @@ This Terraform module creates an ECS Service with optional CloudWatch Alarms for
 
 ```hcl
 module "ecs_service" {
-  source              = "github.com/opstimus/terraform-aws-ecs-service?ref=v<RELEASE>"
-
-  project             = "example-project"
-  environment         = "dev"
-  service             = "api"
-  cluster_name        = "example-cluster"
-  cluster_arn         = "arn:aws:ecs:region:account-id:cluster/example-cluster"
-  task_definition     = "arn:aws:ecs:region:account-id:task/example-task"
-  desired_count       = 2
-  target_group_arn    = "arn:aws:elasticloadbalancing:region:account-id:targetgroup/example-target"
-  container_name      = "example-container"
-  container_port      = 80
-  subnets             = ["subnet-abc", "subnet-def"]
-  security_group      = ["sg-12345"]
-  assign_public_ip    = false
-
-  enable_cpu_alarm    = true
-  enable_memory_alarm = true
-  alarm_sns_arn       = "arn:aws:sns:region:account-id:example-topic"
-  force_new_deployment = false
+  source                                = "github.com/opstimus/terraform-aws-ecs-service?ref=v<RELEASE>"
+  project                               = "example-project"
+  environment                           = "dev"
+  service                               = "api"
+  cluster_name                          = "example-cluster"
+  cluster_arn                           = "arn:aws:ecs:region:account-id:cluster/example-cluster"
+  task_definition                       = "arn:aws:ecs:region:account-id:task/example-task"
+  desired_count                         = 2
+  target_group_arn                      = "arn:aws:elasticloadbalancing:region:account-id:targetgroup/example-target"
+  container_name                        = "example-container"
+  container_port                        = 80
+  subnets                               = ["subnet-abc", "subnet-def"]
+  security_group                        = ["sg-12345"]
+  assign_public_ip                      = false
+  alarm_sns_arn                         = "arn:aws:sns:region:account-id:example-topic"
+  enable_cpu_alarm                      = true
+  enable_memory_alarm                   = true
+  deployment_minimum_healthy_percent    = 100
+  deployment_maximum_percent            = 200
+  capacity_provider_fargate_base        = 1
+  capacity_provider_fargate_weight      = 50
+  capacity_provider_fargate_spot_weight = 50
+  force_new_deployment                  = false
+  tags = {
+    Project = <project-name>
+    Environment = <environment-name>
+  }
 }
 ```
 
