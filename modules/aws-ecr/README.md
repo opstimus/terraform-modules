@@ -9,13 +9,13 @@ This Terraform module creates an Amazon ECR (Elastic Container Registry) reposit
 | Name      | Version   |
 |-----------|-----------|
 | terraform | >= 1.3.0  |
-| aws       | >= 4.0    |
+| aws       | >= 6.0    |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws  | >= 4.0  |
+| aws  | >= 6.0  |
 
 ## Inputs
 
