@@ -8,6 +8,12 @@ variable "service" {
   description = "Name of the service, i.e backend"
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource."
+  default     = {}
+}
+
 variable "image_tag_mutability" {
   type = bool
 }
