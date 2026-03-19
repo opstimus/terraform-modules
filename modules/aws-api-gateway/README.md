@@ -9,13 +9,13 @@ This Terraform module creates an AWS API Gateway v2 resource with CORS configura
 | Name      | Version  |
 |-----------|----------|
 | terraform | >= 1.3.0 |
-| aws       | >= 4.0   |
+| aws       | >= 6.0   |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws  | >= 4.0  |
+| aws  | >= 6.0  |
 
 ## Inputs
 
