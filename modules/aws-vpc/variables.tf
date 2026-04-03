@@ -53,6 +53,12 @@ variable "private_cidr_3" {
   description = "Private subnet cird"
 }
 
+variable "enable_ssm_vpc_endpoints" {
+  type        = bool
+  description = "Create VPC interface endpoint for SSM in private subnets."
+  default     = false
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map of tags to assign to the resource."

@@ -34,6 +34,7 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 | private_cidr_1     | Private subnet CIDR block | `string` | -           | yes      |
 | private_cidr_2     | Private subnet CIDR block | `string` | -           | yes      |
 | private_cidr_3     | Private subnet CIDR block | `string` | -           | yes      |
+| enable_ssm_vpc_endpoints | Create VPC interface endpoint for SSM in private subnets | `bool` | `false` | no       |
 
 ## Outputs
 

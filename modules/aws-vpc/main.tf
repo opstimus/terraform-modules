@@ -1,4 +1,4 @@
-
+data "aws_region" "current" {}
 
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
@@ -227,6 +227,69 @@ resource "aws_vpc_security_group_egress_rule" "nat_egress_ipv6" {
   )
 }
 
+resource "aws_iam_role" "nat_instance" {
+  count = var.nat == "instance" ? 1 : 0
+
+  name = "${var.project}-${var.environment}-nat-instance"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-instance"
+    },
+    var.tags
+  )
+}
+
+resource "aws_iam_role_policy" "nat_instance_ssm" {
+  count = var.nat == "instance" ? 1 : 0
+
+  name = "${var.project}-${var.environment}-nat-instance-ssm"
+  role = aws_iam_role.nat_instance[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:UpdateInstanceInformation",
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_instance_profile" "nat_instance" {
+  count = var.nat == "instance" ? 1 : 0
+
+  name = "${var.project}-${var.environment}-nat-instance"
+  role = aws_iam_role.nat_instance[0].name
+
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-nat-instance"
+    },
+    var.tags
+  )
+}
+
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
 
@@ -237,13 +300,14 @@ data "aws_ami" "amazon_linux_2" {
   owners = ["amazon"]
 }
 
-resource "aws_instance" "nat_1" {
-  count                       = var.nat == "instance" ? 1 : 0
+resource "aws_instance" "nat" {
+  count                       = var.nat == "instance" ? 3 : 0
   ami                         = data.aws_ami.amazon_linux_2.id
   instance_type               = var.nat_instance_type
+  iam_instance_profile        = aws_iam_instance_profile.nat_instance[0].name
   vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
   source_dest_check           = false
-  subnet_id                   = aws_subnet.public_1.id
+  subnet_id                   = [aws_subnet.public_1.id, aws_subnet.public_2.id, aws_subnet.public_3.id][count.index]
   user_data_replace_on_change = true
   user_data = trimspace(
     <<EOF
@@ -252,6 +316,8 @@ resource "aws_instance" "nat_1" {
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     sudo yum -y install iptables-services
     sudo service iptables save
+    sudo systemctl enable iptables
+    sudo systemctl start iptables
   EOF
   )
 
@@ -262,75 +328,10 @@ resource "aws_instance" "nat_1" {
 
   tags = merge(
     {
-      Name = "${var.project}-${var.environment}-nat-instance-1"
+      Name = "${var.project}-${var.environment}-nat-instance-${count.index + 1}"
     },
     var.tags
   )
-
-}
-
-resource "aws_instance" "nat_2" {
-  count                       = var.nat == "instance" ? 1 : 0
-  ami                         = data.aws_ami.amazon_linux_2.id
-  instance_type               = var.nat_instance_type
-  vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
-  source_dest_check           = false
-  subnet_id                   = aws_subnet.public_2.id
-  user_data_replace_on_change = true
-  user_data = trimspace(
-    <<EOF
-    #!/bin/bash
-    sudo sysctl -w net.ipv4.ip_forward=1
-    sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo yum -y install iptables-services
-    sudo service iptables save
-  EOF
-  )
-
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
-  }
-
-  tags = merge(
-    {
-      Name = "${var.project}-${var.environment}-nat-instance-2"
-    },
-    var.tags
-  )
-
-}
-
-resource "aws_instance" "nat_3" {
-  count                       = var.nat == "instance" ? 1 : 0
-  ami                         = data.aws_ami.amazon_linux_2.id
-  instance_type               = var.nat_instance_type
-  vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
-  source_dest_check           = false
-  subnet_id                   = aws_subnet.public_3.id
-  user_data_replace_on_change = true
-  user_data = trimspace(
-    <<EOF
-    #!/bin/bash
-    sudo sysctl -w net.ipv4.ip_forward=1
-    sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo yum -y install iptables-services
-    sudo service iptables save
-  EOF
-  )
-
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
-  }
-
-  tags = merge(
-    {
-      Name = "${var.project}-${var.environment}-nat-instance-3"
-    },
-    var.tags
-  )
-
 }
 
 resource "aws_nat_gateway" "gateway_1" {
@@ -376,21 +377,21 @@ resource "aws_route" "private_1" {
   route_table_id         = aws_route_table.private_1.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_1[0].id : null
-  network_interface_id   = var.nat == "instance" ? aws_instance.nat_1[0].primary_network_interface_id : null
+  network_interface_id   = var.nat == "instance" ? aws_instance.nat[0].primary_network_interface_id : null
 }
 
 resource "aws_route" "private_2" {
   route_table_id         = aws_route_table.private_2.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_2[0].id : null
-  network_interface_id   = var.nat == "instance" ? aws_instance.nat_2[0].primary_network_interface_id : null
+  network_interface_id   = var.nat == "instance" ? aws_instance.nat[1].primary_network_interface_id : null
 }
 
 resource "aws_route" "private_3" {
   route_table_id         = aws_route_table.private_3.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_3[0].id : null
-  network_interface_id   = var.nat == "instance" ? aws_instance.nat_3[0].primary_network_interface_id : null
+  network_interface_id   = var.nat == "instance" ? aws_instance.nat[2].primary_network_interface_id : null
 }
 
 resource "aws_eip" "nat_1" {
@@ -429,20 +430,58 @@ resource "aws_eip" "nat_3" {
   }
 }
 
-resource "aws_eip_association" "nat_instance_1" {
-  count         = var.nat == "instance" ? 1 : 0
-  instance_id   = aws_instance.nat_1[0].id
-  allocation_id = aws_eip.nat_1.id
+resource "aws_eip_association" "nat_instance" {
+  count         = var.nat == "instance" ? 3 : 0
+  instance_id   = aws_instance.nat[count.index].id
+  allocation_id = [aws_eip.nat_1.id, aws_eip.nat_2.id, aws_eip.nat_3.id][count.index]
 }
 
-resource "aws_eip_association" "nat_instance_2" {
-  count         = var.nat == "instance" ? 1 : 0
-  instance_id   = aws_instance.nat_2[0].id
-  allocation_id = aws_eip.nat_2.id
+resource "aws_security_group" "ssm_endpoints" {
+  count       = var.enable_ssm_vpc_endpoints ? 1 : 0
+  name        = "${var.project}-${var.environment}-ssm-endpoints"
+  description = "Allow HTTPS from VPC to SSM VPC endpoints"
+  vpc_id      = aws_vpc.main.id
+
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-ssm-endpoints"
+    },
+    var.tags
+  )
 }
 
-resource "aws_eip_association" "nat_instance_3" {
-  count         = var.nat == "instance" ? 1 : 0
-  instance_id   = aws_instance.nat_3[0].id
-  allocation_id = aws_eip.nat_3.id
+resource "aws_vpc_security_group_ingress_rule" "ssm_endpoints_ingress" {
+  count             = var.enable_ssm_vpc_endpoints ? 1 : 0
+  security_group_id = aws_security_group.ssm_endpoints[0].id
+  description       = "HTTPS from VPC"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  cidr_ipv4         = var.vpc_cidr
+
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-ssm-endpoints-ingress"
+    },
+    var.tags
+  )
 }
+
+resource "aws_vpc_endpoint" "ssm" {
+  count = var.enable_ssm_vpc_endpoints ? 1 : 0
+
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.id}.ssm"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id, aws_subnet.private_3.id]
+  security_group_ids  = [aws_security_group.ssm_endpoints[0].id]
+  private_dns_enabled = true
+
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-ssm"
+    },
+    var.tags
+  )
+}
+
