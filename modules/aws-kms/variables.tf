@@ -23,3 +23,18 @@ variable "enable_key_rotation" {
   type    = bool
   default = true
 }
+
+variable "key_policy_statements" {
+  type = list(object({
+    sid    = optional(string, "")
+    effect = string
+    principals = list(object({
+      type        = string
+      identifiers = list(string)
+    }))
+    actions   = list(string)
+    resources = list(string)
+  }))
+  default     = []
+  description = "Additional key policy statements merged with the default root account statement. Use for service principals (e.g. dsql.amazonaws.com) or cross-account access."
+}
