@@ -8,14 +8,19 @@ variable "environment" {
   description = "Environment name"
 }
 
-variable "vpc_id" {
+variable "name" {
   type        = string
-  description = "VPC ID where the runner will be deployed"
+  description = "Name identifier for the runner (e.g., 'base', 'app')"
 }
 
-variable "subnet_id" {
+variable "vpc_id" {
   type        = string
-  description = "Subnet ID for the runner instance"
+  description = "VPC ID where the CodeBuild runner will be deployed"
+}
+
+variable "subnet_ids" {
+  type        = list(string)
+  description = "List of subnet IDs for CodeBuild VPC configuration"
 }
 
 variable "deploy_region" {
@@ -28,15 +33,16 @@ variable "github_repository" {
   description = "GitHub repository in format owner/repo"
 }
 
-variable "name" {
+variable "compute_type" {
   type        = string
-  description = "Name identifier for the runner (e.g., 'base', 'app')"
+  description = "CodeBuild compute type for the runner"
+  default     = "BUILD_GENERAL1_SMALL"
 }
 
-variable "instance_type" {
-  type        = string
-  description = "EC2 instance type"
-  default     = "t3.small"
+variable "build_timeout" {
+  type        = number
+  description = "Build timeout in minutes"
+  default     = 60
 }
 
 variable "additional_policy_arns" {
@@ -45,3 +51,14 @@ variable "additional_policy_arns" {
   default     = []
 }
 
+variable "create_github_connection" {
+  type        = bool
+  description = "Whether to create the CodeConnections GitHub App connection. Set false if one already exists in this account/region and pass its ARN via github_connection_arn."
+  default     = true
+}
+
+variable "github_connection_arn" {
+  type        = string
+  description = "Existing CodeConnections connection ARN. Only used when create_github_connection = false."
+  default     = ""
+}

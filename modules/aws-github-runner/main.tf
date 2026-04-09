@@ -1,9 +1,9 @@
 locals {
-  resource_name            = "${var.project}-${var.environment}-${var.name}-github-runner"
-  github_token_secret_name = "github/runner/token"
+  resource_name         = "${var.project}-${var.environment}-${var.name}-github-runner"
+  github_connection_arn = var.create_github_connection ? aws_codestarconnections_connection.github[0].arn : var.github_connection_arn
 }
 
-# IAM role for GitHub runner to access Secrets Manager
+# IAM role for CodeBuild runner
 resource "aws_iam_role" "github_runner" {
   name = local.resource_name
 
@@ -14,15 +14,15 @@ resource "aws_iam_role" "github_runner" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          Service = "ec2.amazonaws.com"
+          Service = "codebuild.amazonaws.com"
         }
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy" "github_runner_secrets" {
-  name = "${local.resource_name}-secrets"
+resource "aws_iam_role_policy" "github_runner_logs" {
+  name = "${local.resource_name}-logs"
   role = aws_iam_role.github_runner.id
 
   policy = jsonencode({
@@ -31,10 +31,69 @@ resource "aws_iam_role_policy" "github_runner_secrets" {
       {
         Effect = "Allow"
         Action = [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:secretsmanager:${var.deploy_region}:*:secret:${local.github_token_secret_name}*"
+        Resource = [
+          "arn:aws:logs:${var.deploy_region}:*:log-group:/aws/codebuild/${local.resource_name}",
+          "arn:aws:logs:${var.deploy_region}:*:log-group:/aws/codebuild/${local.resource_name}:*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "github_runner_vpc" {
+  name = "${local.resource_name}-vpc"
+  role = aws_iam_role.github_runner.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeDhcpOptions",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeVpcs"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ec2:CreateNetworkInterfacePermission"]
+        Resource = "arn:aws:ec2:${var.deploy_region}:*:network-interface/*"
+        Condition = {
+          StringEquals = {
+            "ec2:AuthorizedService" = "codebuild.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "github_runner_connections" {
+  name = "${local.resource_name}-connections"
+  role = aws_iam_role.github_runner.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "codestar-connections:UseConnection",
+          "codeconnections:UseConnection",
+          "codeconnections:GetConnectionToken",
+          "codeconnections:GetConnection"
+        ]
+        Resource = local.github_connection_arn
       }
     ]
   })
@@ -44,31 +103,6 @@ resource "aws_iam_role_policy_attachment" "github_runner_additional" {
   for_each   = toset(var.additional_policy_arns)
   role       = aws_iam_role.github_runner.name
   policy_arn = each.value
-}
-
-resource "aws_iam_instance_profile" "github_runner" {
-  name = local.resource_name
-  role = aws_iam_role.github_runner.name
-}
-
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"]
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
 }
 
 resource "aws_security_group" "github_runner" {
@@ -96,96 +130,81 @@ resource "aws_vpc_security_group_egress_rule" "ipv6" {
   cidr_ipv6   = "::/0"
 }
 
-resource "aws_instance" "github_runner" {
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = var.instance_type
-  subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = [aws_security_group.github_runner.id]
-  iam_instance_profile        = aws_iam_instance_profile.github_runner.name
-  associate_public_ip_address = false
-  source_dest_check           = true
+# GitHub App connection via AWS CodeConnections (one-time manual activation required after apply)
+resource "aws_codestarconnections_connection" "github" {
+  count         = var.create_github_connection ? 1 : 0
+  name          = local.resource_name
+  provider_type = "GitHub"
+}
 
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 10
-    volume_type           = "gp3"
-    encrypted             = true
+# Registers the CodeConnections GitHub App as the credential for CodeBuild GitHub operations
+resource "aws_codebuild_source_credential" "github" {
+  auth_type   = "CODECONNECTIONS"
+  server_type = "GITHUB"
+  token       = local.github_connection_arn
+}
+
+resource "aws_codebuild_project" "github_runner" {
+  name          = local.resource_name
+  description   = "GitHub Actions runner for ${var.github_repository}"
+  service_role  = aws_iam_role.github_runner.arn
+  build_timeout = var.build_timeout
+
+  artifacts {
+    type = "NO_ARTIFACTS"
   }
 
-  user_data_replace_on_change = true
-  user_data                   = <<-EOF
-    #!/bin/bash
-    set -e
+  environment {
+    compute_type = var.compute_type
+    image        = "aws/codebuild/standard:7.0"
+    type         = "LINUX_CONTAINER"
+  }
 
-    # Update system
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update
-    apt-get upgrade -y
+  source {
+    type            = "GITHUB"
+    location        = "https://github.com/${var.github_repository}"
+    git_clone_depth = 1
 
-    # Install dependencies
-    apt-get install -y curl jq unzip nodejs
+    git_submodules_config {
+      fetch_submodules = false
+    }
 
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip awscliv2.zip
-    ./aws/install
+    auth {
+      type     = "CODECONNECTIONS"
+      resource = local.github_connection_arn
+    }
+  }
 
-    # Wait until IAM role credentials are available
-    echo "Waiting for IAM role credentials..."
-    until aws sts get-caller-identity --region ${var.deploy_region} >/dev/null 2>&1; do
-      sleep 2
-    done
-    echo "IAM credentials are ready."
+  vpc_config {
+    vpc_id             = var.vpc_id
+    subnets            = var.subnet_ids
+    security_group_ids = [aws_security_group.github_runner.id]
+  }
 
-    # Get GitHub token from Secrets Manager
-    GITHUB_TOKEN=$(aws secretsmanager get-secret-value \
-      --secret-id "${local.github_token_secret_name}" \
-      --region "${var.deploy_region}" \
-      --query 'SecretString' \
-      --output text)
-
-    if [ -z "$GITHUB_TOKEN" ]; then
-      echo "ERROR: Failed to retrieve GitHub token from Secrets Manager"
-      exit 1
-    fi
-
-    # Get registration token from GitHub API
-    REGISTRATION_TOKEN=$(curl -L \
-      -X POST \
-      -H "Accept: application/vnd.github+json" \
-      -H "Authorization: Bearer $GITHUB_TOKEN" \
-      -H "X-GitHub-Api-Version: 2022-11-28" \
-      https://api.github.com/repos/${var.github_repository}/actions/runners/registration-token | jq -r '.token')
-
-    if [ -z "$REGISTRATION_TOKEN" ] || [ "$REGISTRATION_TOKEN" = "null" ]; then
-      echo "ERROR: Failed to retrieve registration token from GitHub API"
-      exit 1
-    fi
-
-    # Create actions-runner directory
-    cd /opt
-    mkdir actions-runner && cd actions-runner
-
-    # Download the latest runner
-    RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name')
-    RUNNER_VERSION=$${RUNNER_VERSION#v}  # Remove 'v' prefix if present
-    curl -o actions-runner-linux-x64-$${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v$${RUNNER_VERSION}/actions-runner-linux-x64-$${RUNNER_VERSION}.tar.gz
-    tar xzf ./actions-runner-linux-x64-$${RUNNER_VERSION}.tar.gz
-
-    # Configure the runner
-    export RUNNER_ALLOW_RUNASROOT="1"
-    ./config.sh --url https://github.com/${var.github_repository} --token "$REGISTRATION_TOKEN" --name ${local.resource_name} --replace --unattended
-
-    # Run the runner (not as a service since instance is temporary)
-    ./run.sh
-  EOF
-
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "/aws/codebuild/${local.resource_name}"
+      stream_name = "build-log"
+    }
   }
 
   tags = {
     Name = local.resource_name
   }
+
+  depends_on = [
+    aws_iam_role_policy.github_runner_connections,
+    aws_codebuild_source_credential.github,
+  ]
 }
 
+resource "aws_codebuild_webhook" "github_runner" {
+  project_name = aws_codebuild_project.github_runner.name
+
+  filter_group {
+    filter {
+      type    = "EVENT"
+      pattern = "WORKFLOW_JOB_QUEUED"
+    }
+  }
+}
