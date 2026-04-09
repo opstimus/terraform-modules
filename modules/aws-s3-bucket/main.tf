@@ -1,6 +1,22 @@
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
+locals {
+  bucket_name = var.bucket_namespace == "account-regional" ? format(
+    "%s-%s-%s-%s-%s-an",
+    var.project,
+    var.environment,
+    var.name,
+    data.aws_caller_identity.current.account_id,
+    data.aws_region.current.region
+  ) : "${var.project}-${var.environment}-${var.name}"
+}
+
 resource "aws_s3_bucket" "main" {
-  bucket = "${var.project}-${var.environment}-${var.name}"
-  tags   = var.tags
+  bucket           = local.bucket_name
+  bucket_namespace = var.bucket_namespace
+  tags             = var.tags
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "main" {

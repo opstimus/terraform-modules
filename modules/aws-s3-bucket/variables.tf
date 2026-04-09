@@ -48,3 +48,9 @@ variable "restrict_public_buckets" {
   type    = bool
   default = true
 }
+
+variable "bucket_namespace" {
+  type        = string
+  description = "Bucket namespace mode. Valid values are account-regional or global."
+  default     = "global"
+}
