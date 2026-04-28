@@ -9,7 +9,7 @@ This Terraform module creates a PostgreSQL database and user with appropriate pr
 | Name | Version |
 |------|---------|
 | terraform | >= 1.3.0 |
-| aws | >= 4.0 |
+| aws | >= 6.0 |
 | postgresql | >= 1.26 |
 | random | >= 3.7 |
 
@@ -17,7 +17,7 @@ This Terraform module creates a PostgreSQL database and user with appropriate pr
 
 | Name | Version |
 |------|---------|
-| aws | >= 4.0 |
+| aws | >= 6.0 |
 | postgresql | >= 1.26 |
 | random | >= 3.7 |
 
