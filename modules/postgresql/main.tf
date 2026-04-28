@@ -37,11 +37,12 @@ resource "postgresql_grant" "schema" {
 
 # Grant default privileges on tables
 resource "postgresql_default_privileges" "tables" {
-  database    = postgresql_database.database.name
-  role        = postgresql_role.user.name
-  schema      = "public"
-  owner       = var.master_username
-  privileges  = ["DELETE", "INSERT", "MAINTAIN", "REFERENCES", "SELECT", "TRIGGER", "TRUNCATE", "UPDATE"]
+  database = postgresql_database.database.name
+  role     = postgresql_role.user.name
+  schema   = "public"
+  owner    = var.master_username
+  # TODO: Add "MAINTAIN" once supported — https://github.com/cyrilgdn/terraform-provider-postgresql/issues/573
+  privileges  = ["DELETE", "INSERT", "REFERENCES", "SELECT", "TRIGGER", "TRUNCATE", "UPDATE"]
   object_type = "table"
 }
 
