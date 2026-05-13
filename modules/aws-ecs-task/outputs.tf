@@ -8,7 +8,3 @@ output "state_machine_name" {
   description = "Name of the Step Function state machine."
 }
 
-output "task_role_arn" {
-  value       = local.task_role_arn
-  description = "ARN of the task role in use — either the caller-supplied task_role_arn or the one this module created."
-}

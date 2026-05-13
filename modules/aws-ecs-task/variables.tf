@@ -36,8 +36,7 @@ variable "task_execution_role_arn" {
 
 variable "task_role_arn" {
   type        = string
-  description = "ARN of the task IAM role passed to the running container. When null, the module creates a default role with SSM exec-channel permissions."
-  default     = null
+  description = "ARN of the task IAM role passed to the running container. Used in the Step Function role's iam:PassRole permission. Typically the task_role_arn output of terraform-aws-task-definition."
 }
 
 variable "subnets" {

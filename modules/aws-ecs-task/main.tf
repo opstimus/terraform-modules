@@ -5,43 +5,6 @@ locals {
   resource_name            = "${var.project}-${var.environment}-${var.name}"
   task_definition_revision = reverse(split(":", var.task_definition_arn))[0]
   task_definition_family   = trimsuffix(var.task_definition_arn, ":${local.task_definition_revision}")
-  task_role_arn            = var.task_role_arn != null ? var.task_role_arn : aws_iam_role.task[0].arn
-}
-
-resource "aws_iam_role" "task" {
-  count = var.task_role_arn == null ? 1 : 0
-  name  = "${local.resource_name}-task"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = { Service = "ecs-tasks.amazonaws.com" }
-    }]
-  })
-
-  tags = var.tags
-}
-
-resource "aws_iam_role_policy" "task" {
-  count = var.task_role_arn == null ? 1 : 0
-  name  = "${local.resource_name}-task"
-  role  = aws_iam_role.task[0].id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "ssmmessages:CreateControlChannel",
-        "ssmmessages:CreateDataChannel",
-        "ssmmessages:OpenControlChannel",
-        "ssmmessages:OpenDataChannel"
-      ]
-      Resource = "*"
-    }]
-  })
 }
 
 resource "aws_iam_role" "sfn" {
@@ -72,7 +35,7 @@ data "aws_iam_policy_document" "sfn" {
     actions = ["iam:PassRole"]
     resources = [
       var.task_execution_role_arn,
-      local.task_role_arn,
+      var.task_role_arn,
     ]
   }
   statement {
@@ -87,6 +50,19 @@ resource "aws_iam_role_policy" "sfn" {
   name   = "${local.resource_name}-sfn"
   role   = aws_iam_role.sfn.id
   policy = data.aws_iam_policy_document.sfn.json
+}
+
+# IAM eventual-consistency guard: when the SFN policy is replaced (e.g. task
+# role swap), give the new permissions time to propagate before RunTask fires.
+# Recreated on policy changes; on first create the delay overlaps with SFN
+# state-machine creation latency.
+resource "time_sleep" "iam_propagation" {
+  depends_on      = [aws_iam_role_policy.sfn]
+  create_duration = "15s"
+
+  triggers = {
+    sfn_policy = aws_iam_role_policy.sfn.policy
+  }
 }
 
 resource "aws_sfn_state_machine" "main" {
@@ -127,6 +103,8 @@ resource "null_resource" "run" {
   triggers = {
     task_definition_arn = var.task_definition_arn
   }
+
+  depends_on = [time_sleep.iam_propagation, aws_sfn_state_machine.main]
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
