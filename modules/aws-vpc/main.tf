@@ -290,19 +290,13 @@ resource "aws_iam_instance_profile" "nat_instance" {
   )
 }
 
-data "aws_ami" "amazon_linux_2" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
-  }
-  owners = ["amazon"]
+data "aws_ssm_parameter" "al2023_ami" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 }
 
 resource "aws_instance" "nat" {
   count                       = var.nat == "instance" ? 3 : 0
-  ami                         = data.aws_ami.amazon_linux_2.id
+  ami                         = data.aws_ssm_parameter.al2023_ami.value
   instance_type               = var.nat_instance_type
   iam_instance_profile        = aws_iam_instance_profile.nat_instance[0].name
   vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
@@ -313,8 +307,8 @@ resource "aws_instance" "nat" {
     <<EOF
     #!/bin/bash
     sudo sysctl -w net.ipv4.ip_forward=1
+    sudo dnf -y install iptables-services
     sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo yum -y install iptables-services
     sudo service iptables save
     sudo systemctl enable iptables
     sudo systemctl start iptables
