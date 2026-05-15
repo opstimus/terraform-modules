@@ -51,13 +51,14 @@ variable "subnet_id" {
 }
 
 variable "cluster_mode" {
-  description = "The cluster mode of the Redis cluster (e.g., SHARDED, NON_SHARDED)."
+  description = "The cluster mode of the Redis cluster (e.g., SHARDED, NONSHARDED.)."
   type        = string
 }
 
 variable "shard_count" {
   description = "The number of shards in the Redis cluster (required if cluster_mode is SHARDED)."
   type        = number
+  default     = 0
 }
 
 variable "allowed_cidrs" {
