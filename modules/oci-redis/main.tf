@@ -36,13 +36,15 @@ resource "oci_core_network_security_group_security_rule" "redis_egress" {
 }
 
 resource "oci_redis_oci_cache_config_set" "main" {
+  count          = length(var.config_items) > 0 ? 1 : 0
   compartment_id = var.compartment_id
   configuration_details {
-    #Required
-    items {
-      #Required
-      config_key   = var.config_key
-      config_value = var.config_value
+    dynamic "items" {
+      for_each = var.config_items
+      content {
+        config_key   = items.key
+        config_value = items.value
+      }
     }
   }
   display_name     = "${var.project}-${var.environment}-${var.name}-redis-cache-config-set"
@@ -59,7 +61,7 @@ resource "oci_redis_redis_cluster" "main" {
   subnet_id               = var.subnet_id
   cluster_mode            = var.cluster_mode
   nsg_ids                 = [oci_core_network_security_group.main.id]
-  oci_cache_config_set_id = oci_redis_oci_cache_config_set.main.id
+  oci_cache_config_set_id = length(oci_redis_oci_cache_config_set.main) > 0 ? oci_redis_oci_cache_config_set.main[0].id : null
   shard_count             = var.cluster_mode == "SHARDED" ? var.shard_count : null
   freeform_tags           = var.tags
 }

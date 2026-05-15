@@ -23,14 +23,10 @@ variable "vcn_id" {
   type        = string
 }
 
-variable "config_key" {
-  description = "The configuration key for the Redis cache config set."
-  type        = string
-}
-
-variable "config_value" {
-  description = "The configuration value for the Redis cache config set."
-  type        = string
+variable "config_items" {
+  description = "Map of Redis configuration key-value pairs for the cache config set. Leave empty to skip creating the config set (e.g. { maxmemory-policy = \"allkeys-lru\", hz = \"15\" })."
+  type        = map(string)
+  default     = {}
   sensitive   = true
 }
 
