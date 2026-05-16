@@ -19,3 +19,9 @@ output "public_ip" {
   value       = oci_core_instance.main.public_ip
   sensitive   = true
 }
+
+output "reserved_public_ip" {
+  description = "The reserved public IP address assigned to the instance."
+  value       = var.create_reserved_public_ip ? oci_core_public_ip.main[0].ip_address : null
+  sensitive   = true
+}

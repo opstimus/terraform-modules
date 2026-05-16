@@ -100,3 +100,23 @@ resource "oci_core_instance" "main" {
 
   preserve_boot_volume = false
 }
+
+data "oci_core_vnic_attachments" "main" {
+  count          = var.create_reserved_public_ip ? 1 : 0
+  compartment_id = var.compartment_id
+  instance_id    = oci_core_instance.main.id
+}
+
+data "oci_core_private_ips" "main" {
+  count   = var.create_reserved_public_ip ? 1 : 0
+  vnic_id = data.oci_core_vnic_attachments.main[0].vnic_attachments[0].vnic_id
+}
+
+resource "oci_core_public_ip" "main" {
+  count          = var.create_reserved_public_ip ? 1 : 0
+  compartment_id = var.compartment_id
+  lifetime       = "RESERVED"
+  display_name   = "${var.project}-${var.environment}-${var.name}"
+  private_ip_id  = data.oci_core_private_ips.main[0].private_ips[0].id
+  freeform_tags  = var.tags
+}
