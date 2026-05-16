@@ -46,14 +46,8 @@ variable "shape" {
   type        = string
 }
 
-variable "assign_public_ip" {
-  description = "Whether to assign a public IP to the instance's primary VNIC."
-  type        = bool
-  default     = false
-}
-
-variable "create_reserved_public_ip" {
-  description = "Whether to create a reserved public IP for the instance."
+variable "assign_reserved_public_ip" {
+  description = "Whether to assign a reserved public IP to the instance."
   type        = bool
   default     = false
 }

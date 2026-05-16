@@ -54,7 +54,7 @@ resource "oci_core_instance" "main" {
 
   create_vnic_details {
     assign_private_dns_record = true
-    assign_public_ip          = var.assign_public_ip
+    assign_public_ip          = !var.assign_reserved_public_ip
     display_name              = "${var.project}-${var.environment}-${var.name}"
     nsg_ids                   = [oci_core_network_security_group.main.id]
     skip_source_dest_check    = var.skip_source_dest_check
@@ -102,18 +102,18 @@ resource "oci_core_instance" "main" {
 }
 
 data "oci_core_vnic_attachments" "main" {
-  count          = var.create_reserved_public_ip ? 1 : 0
+  count          = var.assign_reserved_public_ip ? 1 : 0
   compartment_id = var.compartment_id
   instance_id    = oci_core_instance.main.id
 }
 
 data "oci_core_private_ips" "main" {
-  count   = var.create_reserved_public_ip ? 1 : 0
+  count   = var.assign_reserved_public_ip ? 1 : 0
   vnic_id = data.oci_core_vnic_attachments.main[0].vnic_attachments[0].vnic_id
 }
 
 resource "oci_core_public_ip" "main" {
-  count          = var.create_reserved_public_ip ? 1 : 0
+  count          = var.assign_reserved_public_ip ? 1 : 0
   compartment_id = var.compartment_id
   lifetime       = "RESERVED"
   display_name   = "${var.project}-${var.environment}-${var.name}"
