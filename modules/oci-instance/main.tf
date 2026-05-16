@@ -95,7 +95,7 @@ resource "oci_core_instance" "main" {
   }
 
   metadata = {
-    ssh_authorized_keys = file("${path.root}/ssh_keys/authorized_keys.pub")
+    ssh_authorized_keys = file("${path.root}/ssh_keys/${var.environment}/authorized_keys.pub")
   }
 
   preserve_boot_volume = false
