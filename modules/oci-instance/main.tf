@@ -87,6 +87,13 @@ resource "oci_core_instance" "main" {
     kms_key_id              = var.kms_key_id
   }
 
+  lifecycle {
+    ignore_changes = [
+      metadata,
+      source_details[0].source_id
+    ]
+  }
+
   metadata = {
     ssh_authorized_keys = file("${path.root}/ssh_keys/authorized_keys.pub")
   }
