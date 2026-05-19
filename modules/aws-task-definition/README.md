@@ -32,9 +32,10 @@ This Terraform module creates an Amazon ECS (Elastic Container Service) task def
 
 ## Outputs
 
-| Name                  | Description                        |
-|-----------------------|------------------------------------|
-| task_definition_arn   | The ARN of the ECS task definition  |
+| Name                  | Description                                                                                  |
+|-----------------------|----------------------------------------------------------------------------------------------|
+| task_definition_arn   | The ARN of the ECS task definition.                                                          |
+| task_role_arn         | ARN of the task IAM role this module created, or null when `task_role_policy` was empty.     |
 
 ## Usage examples
 
