@@ -54,7 +54,7 @@ resource "oci_core_instance" "main" {
 
   create_vnic_details {
     assign_private_dns_record = true
-    assign_public_ip          = !var.assign_reserved_public_ip
+    assign_public_ip          = var.assign_public_ip
     display_name              = "${var.project}-${var.environment}-${var.name}"
     nsg_ids                   = [oci_core_network_security_group.main.id]
     skip_source_dest_check    = var.skip_source_dest_check

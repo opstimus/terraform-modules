@@ -52,6 +52,12 @@ variable "assign_reserved_public_ip" {
   default     = false
 }
 
+variable "assign_public_ip" {
+  description = "Whether to auto assign public IP address to the instance."
+  type        = bool
+  default     = true
+}
+
 variable "skip_source_dest_check" {
   description = "Whether to skip source/destination check on the instance's primary VNIC."
   type        = bool
