@@ -53,6 +53,30 @@ variable "private_cidr_3" {
   description = "Private subnet cird"
 }
 
+variable "enable_isolated_subnets" {
+  type        = bool
+  description = "Create isolated private subnets with no outbound internet access."
+  default     = false
+}
+
+variable "isolated_cidr_1" {
+  type        = string
+  description = "Isolated subnet CIDR for AZ 1. Required when enable_isolated_subnets is true."
+  default     = null
+}
+
+variable "isolated_cidr_2" {
+  type        = string
+  description = "Isolated subnet CIDR for AZ 2. Required when enable_isolated_subnets is true."
+  default     = null
+}
+
+variable "isolated_cidr_3" {
+  type        = string
+  description = "Isolated subnet CIDR for AZ 3. Required when enable_isolated_subnets is true."
+  default     = null
+}
+
 variable "enable_ssm_vpc_endpoints" {
   type        = bool
   description = "Create VPC interface endpoint for SSM in private subnets."

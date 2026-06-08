@@ -430,6 +430,97 @@ resource "aws_eip_association" "nat_instance" {
   allocation_id = [aws_eip.nat_1.id, aws_eip.nat_2.id, aws_eip.nat_3.id][count.index]
 }
 
+# Isolated subnets (no outbound internet access)
+resource "aws_subnet" "isolated_1" {
+  count             = var.enable_isolated_subnets ? 1 : 0
+  availability_zone = data.aws_availability_zones.main.names[0]
+  cidr_block        = var.isolated_cidr_1
+  vpc_id            = aws_vpc.main.id
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-isolated-1"
+    },
+    var.tags
+  )
+}
+
+resource "aws_subnet" "isolated_2" {
+  count             = var.enable_isolated_subnets ? 1 : 0
+  availability_zone = data.aws_availability_zones.main.names[1]
+  cidr_block        = var.isolated_cidr_2
+  vpc_id            = aws_vpc.main.id
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-isolated-2"
+    },
+    var.tags
+  )
+}
+
+resource "aws_subnet" "isolated_3" {
+  count             = var.enable_isolated_subnets ? 1 : 0
+  availability_zone = data.aws_availability_zones.main.names[2]
+  cidr_block        = var.isolated_cidr_3
+  vpc_id            = aws_vpc.main.id
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-isolated-3"
+    },
+    var.tags
+  )
+}
+
+resource "aws_route_table" "isolated_1" {
+  count  = var.enable_isolated_subnets ? 1 : 0
+  vpc_id = aws_vpc.main.id
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-isolated-1"
+    },
+    var.tags
+  )
+}
+
+resource "aws_route_table" "isolated_2" {
+  count  = var.enable_isolated_subnets ? 1 : 0
+  vpc_id = aws_vpc.main.id
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-isolated-2"
+    },
+    var.tags
+  )
+}
+
+resource "aws_route_table" "isolated_3" {
+  count  = var.enable_isolated_subnets ? 1 : 0
+  vpc_id = aws_vpc.main.id
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-isolated-3"
+    },
+    var.tags
+  )
+}
+
+resource "aws_route_table_association" "isolated_1" {
+  count          = var.enable_isolated_subnets ? 1 : 0
+  subnet_id      = aws_subnet.isolated_1[0].id
+  route_table_id = aws_route_table.isolated_1[0].id
+}
+
+resource "aws_route_table_association" "isolated_2" {
+  count          = var.enable_isolated_subnets ? 1 : 0
+  subnet_id      = aws_subnet.isolated_2[0].id
+  route_table_id = aws_route_table.isolated_2[0].id
+}
+
+resource "aws_route_table_association" "isolated_3" {
+  count          = var.enable_isolated_subnets ? 1 : 0
+  subnet_id      = aws_subnet.isolated_3[0].id
+  route_table_id = aws_route_table.isolated_3[0].id
+}
+
 resource "aws_security_group" "ssm_endpoints" {
   count       = var.enable_ssm_vpc_endpoints ? 1 : 0
   name        = "${var.project}-${var.environment}-ssm-endpoints"
