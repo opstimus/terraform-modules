@@ -22,6 +22,12 @@ variable "vpc_cidr" {
   type = string
 }
 
+variable "name" {
+  type        = string
+  description = "Optional name suffix appended to resource names as `{project}-{environment}-{name}`"
+  default     = ""
+}
+
 variable "container_insights" {
   type    = bool
   default = false

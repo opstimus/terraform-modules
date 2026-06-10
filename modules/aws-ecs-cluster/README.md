@@ -23,6 +23,7 @@ This Terraform module sets up an ECS cluster with necessary IAM roles, security 
 |----------------------------|----------------------------------------------|--------------|---------|:--------:|
 | project                    | Project name                                 | string       | -       |   yes    |
 | environment                | Environment name                             | string       | -       |   yes    |
+| name                       | Optional name suffix appended to resource names | string    | `""`    |    no    |
 | vpc_id                     | The ID of the VPC                            | string       | -       |   yes    |
 | vpc_cidr                   | The CIDR block of the VPC                    | string       | -       |   yes    |
 | container_insights         | Enable container insights for the cluster    | bool         | false   |    no    |
@@ -58,6 +59,26 @@ module "ecs_cluster" {
 }
 ```
 
+### With Optional Name Suffix
+
+When `name` is provided, resources are named `{project}-{environment}-{name}-resource-type` instead of the default `{project}-{environment}-resource-type`.
+
+```hcl
+module "ecs_cluster" {
+  source             = "github.com/opstimus/terraform-aws-ecs-cluster?ref=v<RELEASE>"
+  project            = "my-project"
+  environment        = "dev"
+  name               = "api"
+  vpc_id             = "vpc-0bb1c79de3EXAMPLE"
+  vpc_cidr           = "10.0.0.0/16"
+  container_insights = true
+  tags = {
+    Project     = <project-name>
+    Environment = <environment-name>
+  }
+}
+```
+
 ## Notes
 
-The names for the created resources follow the pattern `{project}-{environment}-resource-type`.
+Resource names follow the pattern `{project}-{environment}-resource-type` by default. When the optional `name` variable is set, the pattern becomes `{project}-{environment}-{name}-resource-type`.

@@ -1,5 +1,9 @@
+locals {
+  name_prefix = var.name != "" ? "${var.project}-${var.environment}-${var.name}" : "${var.project}-${var.environment}"
+}
+
 resource "aws_iam_role" "task_execution" {
-  name = "${var.project}-${var.environment}-ecs-task-exec"
+  name = "${local.name_prefix}-ecs-task-exec"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -27,8 +31,8 @@ resource "aws_iam_role_policy_attachment" "task_execution_custom" {
 }
 
 resource "aws_iam_policy" "main" {
-  name        = "${var.project}-${var.environment}-ecs-task-exec"
-  description = "${var.project}-${var.environment}-ecs-task-exec"
+  name        = "${local.name_prefix}-ecs-task-exec"
+  description = "${local.name_prefix}-ecs-task-exec"
 
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
@@ -54,7 +58,7 @@ resource "aws_iam_policy" "main" {
 }
 
 resource "aws_ecs_cluster" "main" {
-  name = "${var.project}-${var.environment}"
+  name = local.name_prefix
 
   setting {
     name  = "containerInsights"
@@ -69,13 +73,13 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 }
 
 resource "aws_security_group" "main" {
-  name        = "${var.project}-${var.environment}-ecs-cluster"
-  description = "${var.project}-${var.environment}-ecs-cluster"
+  name        = "${local.name_prefix}-ecs-cluster"
+  description = "${local.name_prefix}-ecs-cluster"
   vpc_id      = var.vpc_id
 
   tags = merge(
     {
-      Name = "${var.project}-${var.environment}-ecs-cluster"
+      Name = "${local.name_prefix}-ecs-cluster"
     },
     var.tags
   )
