@@ -120,7 +120,15 @@ resource "null_resource" "run" {
         --state-machine-arn "${aws_sfn_state_machine.main.arn}" \
         --name "$EXEC_NAME" \
         --input "$INPUT" \
-        --query executionArn --output text)
+        --query executionArn --output text 2>&1) || {
+        if echo "$EXEC_ARN" | grep -q "ExecutionAlreadyExists"; then
+          echo "Execution already exists, attaching to existing run."
+          EXEC_ARN="arn:aws:states:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:execution:${local.resource_name}:$EXEC_NAME"
+        else
+          echo "$EXEC_ARN" >&2
+          exit 1
+        fi
+      }
 
       echo "Polling execution: $EXEC_ARN"
       DEADLINE=$(( $(date +%s) + ${var.timeout_seconds} ))
