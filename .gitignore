@@ -6,3 +6,7 @@ CLAUDE.md
 .claude/
 .impeccable/
 .superpowers/
+
+# Terraform working artifacts (validation/init litter; not for reusable modules)
+**/.terraform/
+**/.terraform.lock.hcl
