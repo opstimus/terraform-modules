@@ -1,0 +1,111 @@
+# S3 Bucket Module
+
+## Description
+
+This Terraform module provisions an AWS S3 bucket with server-side encryption (SSE) enabled by default. It supports optional bucket versioning, custom bucket policies, configurable public access blocking, and S3 bucket namespace selection. By default the bucket name is generated as `<project>-<environment>-<name>`. When `bucket_namespace = "account-regional"`, the module generates `<project>-<environment>-<name>-<account-id>-<region>-an`.
+
+## Requirements
+
+| Name      | Version  |
+|-----------|----------|
+| terraform | >= 1.3.0 |
+| aws       | >= 6.0   |
+
+## Providers
+
+| Name | Version  |
+|------|----------|
+| aws  | >= 6.0   |
+
+## Inputs
+
+| Name                      | Description                                         | Type      | Default | Required |
+|---------------------------|-----------------------------------------------------|-----------|---------|:--------:|
+| project                   | Project name                                        | `string`  | -       |   yes    |
+| environment               | Environment name                                    | `string`  | -       |   yes    |
+| name                      | Bucket name suffix for project and environment      | `string`  | -       |   yes    |
+| tags                      | A map of tags to assign to the resource             | `map(string)` | `{}`  |    no    |
+| enable_versioning         | Enable versioning for the S3 bucket                 | `bool`    | true    |    no    |
+| bucket_policy             | A JSON policy document for the S3 bucket            | `string`  | null    |    no    |
+| block_public_acls         | Block public ACLs on the bucket                     | `bool`    | true    |    no    |
+| block_public_policy       | Block public bucket policies                        | `bool`    | true    |    no    |
+| ignore_public_acls        | Ignore existing public ACLs on the bucket           | `bool`    | true    |    no    |
+| restrict_public_buckets   | Restrict public bucket access                       | `bool`    | true    |    no    |
+| bucket_namespace          | Bucket namespace mode: `global` or `account-regional` | `string` | `"global"` |    no    |
+
+## Outputs
+
+| Name        | Description               |
+|-------------|---------------------------|
+| bucket_arn  | The ARN of the bucket     |
+| bucket_name | The name of the bucket    |
+
+## Usage examples
+
+### Basic Usage Example
+
+```hcl
+module "s3_bucket" {
+  source            = "https://github.com/opstimus/terraform-aws-s3-bucket?ref=v<RELEASE>"
+  project           = "my-project"
+  environment       = "production"
+  name              = "data"
+  bucket_namespace  = "global"
+  enable_versioning = true
+  tags = {
+    Project     = "my-project"
+    Environment = "production"
+  }
+}
+```
+
+### Advanced Usage Example with Custom Policy
+
+```hcl
+module "s3_bucket" {
+  source                  = "https://github.com/opstimus/terraform-aws-s3-bucket?ref=v<RELEASE>"
+  project                 = "my-project"
+  environment             = "production"
+  name                    = "data"
+  bucket_namespace        = "global"
+  enable_versioning       = true
+  bucket_policy           = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = "*"
+      Action = "s3:GetObject"
+      Resource = "arn:aws:s3:::my-project-production-data/*"
+    }]
+  })
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+  tags = {
+    Project     = "my-project"
+    Environment = "production"
+  }
+}
+```
+
+This creates a bucket named `my-project-production-data`.
+
+### Account-Regional Namespace Example
+
+```hcl
+module "s3_bucket" {
+  source            = "https://github.com/opstimus/terraform-aws-s3-bucket?ref=v<RELEASE>"
+  project           = "my-project"
+  environment       = "production"
+  name              = "data"
+  bucket_namespace  = "account-regional"
+  enable_versioning = true
+  tags = {
+    Project     = "my-project"
+    Environment = "production"
+  }
+}
+```
+
+This creates a bucket named `my-project-production-data-<account-id>-<region>-an`.
