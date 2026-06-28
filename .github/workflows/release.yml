@@ -1,0 +1,84 @@
+name: Release module
+
+on:
+  workflow_dispatch:
+    inputs:
+      module:
+        description: "Module key under modules/ (e.g. aws-vpc)"
+        required: true
+        type: string
+      bump:
+        description: "Semver bump"
+        required: true
+        type: choice
+        options: [patch, minor, major]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure commit is on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Refusing to release: commit $GITHUB_SHA is not on origin/main. Releases must be cut from main."
+            exit 1
+          fi
+          echo "Commit $GITHUB_SHA is on main."
+
+      - name: Validate module exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD="${{ inputs.module }}"
+          test -d "modules/${MOD}" || { echo "::error::modules/${MOD} not found"; exit 1; }
+          ls modules/${MOD}/*.tf >/dev/null 2>&1 || { echo "::error::no .tf files in modules/${MOD}"; exit 1; }
+
+      - name: Compute next version
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD="${{ inputs.module }}"
+          git fetch --tags --quiet
+          LATEST=$(git tag -l "${MOD}/v*" | sed "s#^${MOD}/v##" | sort -V | tail -n1 || true)
+          if [ -z "$LATEST" ]; then
+            NEXT="1.0.0"
+          else
+            IFS=. read -r MAJOR MINOR PATCH <<< "$LATEST"
+            case "${{ inputs.bump }}" in
+              major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0;;
+              minor) MINOR=$((MINOR+1)); PATCH=0;;
+              patch) PATCH=$((PATCH+1));;
+            esac
+            NEXT="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          TAG="${MOD}/v${NEXT}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::tag ${TAG} already exists"; exit 1
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Next tag: ${TAG}"
+
+      - name: Create tag and GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.ver.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG"
+          gh release create "$TAG" --title "$TAG" --target "$GITHUB_SHA" --generate-notes
