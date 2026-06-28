@@ -303,17 +303,20 @@ resource "aws_instance" "nat" {
   source_dest_check           = false
   subnet_id                   = [aws_subnet.public_1.id, aws_subnet.public_2.id, aws_subnet.public_3.id][count.index]
   user_data_replace_on_change = true
-  user_data = trimspace(
-    <<EOF
+  user_data                   = <<-EOF
     #!/bin/bash
-    sudo sysctl -w net.ipv4.ip_forward=1
-    sudo dnf -y install iptables-services
-    sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo service iptables save
-    sudo systemctl enable iptables
-    sudo systemctl start iptables
+    set -xe
+    dnf install -y iptables
+    echo "net.ipv4.ip_forward=1" | tee /etc/sysctl.d/99-nat.conf
+    sysctl -p /etc/sysctl.d/99-nat.conf
+    ETH=$(ip route show default | awk '{print $5}')
+    iptables -t nat -A POSTROUTING -o $ETH -j MASQUERADE
+    mkdir -p /etc/iptables
+    iptables-save > /etc/iptables/rules.v4
+    printf '[Unit]\nDescription=Restore iptables NAT rules\nAfter=network.target\n\n[Service]\nType=oneshot\nExecStart=/sbin/iptables-restore /etc/iptables/rules.v4\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target\n' > /etc/systemd/system/iptables-restore.service
+    systemctl daemon-reload
+    systemctl enable iptables-restore.service
   EOF
-  )
 
   metadata_options {
     http_endpoint = "enabled"
@@ -556,7 +559,7 @@ resource "aws_vpc_endpoint" "ssm" {
   count = var.enable_ssm_vpc_endpoints ? 1 : 0
 
   vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.${data.aws_region.current.id}.ssm"
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.ssm"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id, aws_subnet.private_3.id]
   security_group_ids  = [aws_security_group.ssm_endpoints[0].id]
