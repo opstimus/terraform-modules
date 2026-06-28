@@ -17,11 +17,6 @@ module "vpc" {
 
 Pin `?ref=` to a per-module tag of the form `<key>/vX.Y.Z`.
 
-## Releasing
-
-Run the **Release module** workflow (Actions → Release module), choose the
-module and bump level. The job requires approval via the `prod` environment.
-
 ## Modules
 
 See `modules/` for the full list. (Populated as modules are migrated.)
