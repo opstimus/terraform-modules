@@ -65,15 +65,16 @@ resource "aws_db_subnet_group" "main" {
 }
 
 resource "aws_db_parameter_group" "main" {
-  count  = length(var.parameter_group_parameters) != 0 ? 1 : 0
+  count  = length(var.db_parameter_group_parameters) != 0 ? 1 : 0
   name   = "${var.project}-${var.environment}-${var.engine}"
   family = var.parameter_group_family
 
   dynamic "parameter" {
-    for_each = var.parameter_group_parameters
+    for_each = var.db_parameter_group_parameters
     content {
-      name  = parameter.value.name
-      value = parameter.value.value
+      name         = parameter.value.name
+      value        = parameter.value.value
+      apply_method = parameter.value.apply_method
     }
   }
   lifecycle {
@@ -83,15 +84,16 @@ resource "aws_db_parameter_group" "main" {
 }
 
 resource "aws_rds_cluster_parameter_group" "main" {
-  count  = length(var.parameter_group_parameters) != 0 ? 1 : 0
+  count  = length(var.cluster_parameter_group_parameters) != 0 ? 1 : 0
   name   = "${var.project}-${var.environment}-${var.engine}-cluster"
   family = var.parameter_group_family
 
   dynamic "parameter" {
-    for_each = var.parameter_group_parameters
+    for_each = var.cluster_parameter_group_parameters
     content {
-      name  = parameter.value.name
-      value = parameter.value.value
+      name         = parameter.value.name
+      value        = parameter.value.value
+      apply_method = parameter.value.apply_method
     }
   }
   lifecycle {
@@ -144,7 +146,7 @@ resource "aws_rds_cluster_instance" "cluster_instances" {
   engine_version                  = aws_rds_cluster.main.engine_version
   instance_class                  = var.enable_serverless_v2 ? "db.serverless" : var.instancetype
   db_subnet_group_name            = aws_db_subnet_group.main.name
-  db_parameter_group_name         = length(aws_rds_cluster_parameter_group.main) > 0 ? aws_rds_cluster_parameter_group.main[0].name : "default.${var.parameter_group_family}"
+  db_parameter_group_name         = length(aws_db_parameter_group.main) > 0 ? aws_db_parameter_group.main[0].name : "default.${var.parameter_group_family}"
   auto_minor_version_upgrade      = false
   performance_insights_enabled    = var.performance_insights_enabled
   performance_insights_kms_key_id = var.performance_insights_enabled ? var.kms_key_id : null
@@ -265,7 +267,7 @@ resource "aws_iam_role_policy" "rds_proxy" {
         ],
         Condition = {
           "StringEquals" = {
-            "kms:ViaService" = "secretsmanager.${data.aws_region.current.id}.amazonaws.com"
+            "kms:ViaService" = "secretsmanager.${data.aws_region.current.region}.amazonaws.com"
           }
         }
       }

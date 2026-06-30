@@ -48,7 +48,8 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 | vpc_id                       | VPC ID                                                   | `string`          | -                    | yes      |
 | private_subnet_ids           | List of private subnet IDs                               | `list(string)`    | -                    | yes      |
 | vpc_cidr                     | CIDR block of the VPC                                    | `string`          | -                    | yes      |
-| parameter_group_parameters   | Parameters for the parameter group                       | `list(object)`    | []                   | no       |
+| cluster_parameter_group_parameters | Parameters for the cluster parameter group (cluster-level) | `list(object)`    | []                   | no       |
+| db_parameter_group_parameters     | Parameters for the DB parameter group (instance-level)     | `list(object)`    | []                   | no       |
 | alarm_sns_arn                | SNS Topic ARN for alarms                                 | `string`          | ""                   | no       |
 | enable_cpu_alarm             | Enable alarms for high CPU utilization                   | `bool`            | false                | no       |
 | enable_rds_proxy             | Enable RDS Proxy                                         | `bool`            | false                | no       |
@@ -128,6 +129,43 @@ module "aurora_rds_cluster" {
     Project = <project-name>
     Environment = <environment-name>
   }
+}
+```
+
+### Example 3: Custom parameter groups (cluster and instance)
+
+Use separate cluster-level and instance-level parameters. Omit either list to use defaults for that group.
+
+```hcl
+module "aurora_rds_cluster" {
+  source = "https://github.com/opstimus/terraform-aws-aurora?ref=v<RELEASE>"
+
+  project                       = "my-project"
+  environment                   = "production"
+  vpc_id                        = "vpc-123456"
+  private_subnet_ids            = ["subnet-123", "subnet-456"]
+  vpc_cidr                      = "10.0.0.0/16"
+  engine                        = "aurora-mysql"
+  engine_version                = "5.7.mysql_aurora.2.10.0"
+  db_name                       = "mydb"
+  master_username               = "admin"
+  parameter_group_family        = "aurora-mysql5.7"
+  storage_encrypted             = true
+  kms_key_id                    = "arn:aws:kms:region:account-id:key/key-id"
+  backup_retention_period       = 7
+
+  # Cluster-level parameters only (e.g. binlog, parallel query)
+  cluster_parameter_group_parameters = [
+    { name = "binlog_format", value = "ROW" },
+    { name = "aurora_parallel_query", value = "OFF" }
+  ]
+
+  # Instance-level parameters only (e.g. charset, connections, slow query log)
+  db_parameter_group_parameters = [
+    { name = "character_set_server", value = "utf8mb4" },
+    { name = "max_connections", value = "500" },
+    { name = "slow_query_log", value = "1" }
+  ]
 }
 ```
 

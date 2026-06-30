@@ -121,12 +121,24 @@ variable "vpc_cidr" {
   type = string
 }
 
-variable "parameter_group_parameters" {
+variable "cluster_parameter_group_parameters" {
   type = list(object({
-    name  = string
-    value = string
+    name         = string
+    value        = string
+    apply_method = optional(string, "immediate")
   }))
-  default = []
+  default     = []
+  description = "Parameters for the cluster parameter group (cluster-level; some parameters exist only here)."
+}
+
+variable "db_parameter_group_parameters" {
+  type = list(object({
+    name         = string
+    value        = string
+    apply_method = optional(string, "immediate")
+  }))
+  default     = []
+  description = "Parameters for the DB parameter group (instance-level; some parameters exist only here)."
 }
 
 variable "alarm_sns_arn" {
