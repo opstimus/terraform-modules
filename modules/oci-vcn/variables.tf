@@ -8,11 +8,6 @@ variable "environment" {
   type        = string
 }
 
-variable "tenancy_id" {
-  description = "The OCID of the tenancy."
-  type        = string
-}
-
 variable "compartment_id" {
   description = "The OCID of the compartment where the VCN will be created."
   type        = string

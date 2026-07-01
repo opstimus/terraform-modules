@@ -1,7 +1,3 @@
-data "oci_identity_availability_domains" "main" {
-  compartment_id = var.tenancy_id
-}
-
 resource "oci_core_vcn" "main" {
   compartment_id = var.compartment_id
   display_name   = "${var.project}-${var.environment}-vcn"
