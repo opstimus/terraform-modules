@@ -1,0 +1,12 @@
+# Internal planning/spec docs — not for the public repo
+docs/superpowers/
+
+# Local AI tooling — not for the public repo
+CLAUDE.md
+.claude/
+.impeccable/
+.superpowers/
+
+# Terraform working artifacts (validation/init litter; not for reusable modules)
+**/.terraform/
+**/.terraform.lock.hcl

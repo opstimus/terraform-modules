@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  detect-modules:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.detect.outputs.modules }}
+      any: ${{ steps.detect.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            RANGE="origin/${{ github.base_ref }}...HEAD"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+              RANGE="HEAD~1...HEAD"
+            else
+              RANGE="$BEFORE...HEAD"
+            fi
+          fi
+          # Flat layout: a module key is the first path segment under modules/.
+          KEYS=$(git diff --name-only $RANGE -- modules \
+            | awk -F/ '$1=="modules" && NF>=2 {print $2}' \
+            | sort -u | sed '/^$/d')
+          if [ -z "$KEYS" ]; then
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "modules=[]" >> "$GITHUB_OUTPUT"
+          else
+            JSON=$(printf '%s\n' "$KEYS" | jq -R . | jq -cs .)
+            echo "any=true" >> "$GITHUB_OUTPUT"
+            echo "modules=$JSON" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Changed module keys: ${KEYS:-<none>}"
+
+  lint:
+    needs: detect-modules
+    if: needs.detect-modules.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
+    defaults:
+      run:
+        working-directory: modules/${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform fmt
+        run: terraform fmt -check -diff -recursive
+      - uses: terraform-linters/setup-tflint@v4
+      - name: TFLint init
+        run: tflint --init
+      - name: TFLint
+        run: tflint --recursive
