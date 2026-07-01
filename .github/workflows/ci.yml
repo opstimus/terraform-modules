@@ -34,9 +34,12 @@ jobs:
             fi
           fi
           # Flat layout: a module key is the first path segment under modules/.
+          # Keep only keys whose module dir still exists, so a deleted module
+          # (its dir gone from the checkout) does not fail the lint matrix.
           KEYS=$(git diff --name-only $RANGE -- modules \
             | awk -F/ '$1=="modules" && NF>=2 {print $2}' \
-            | sort -u | sed '/^$/d')
+            | sort -u | sed '/^$/d' \
+            | while read -r k; do [ -d "modules/$k" ] && echo "$k"; done)
           if [ -z "$KEYS" ]; then
             echo "any=false" >> "$GITHUB_OUTPUT"
             echo "modules=[]" >> "$GITHUB_OUTPUT"
