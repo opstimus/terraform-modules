@@ -1,0 +1,92 @@
+locals {
+  alb_name_suffix = var.internal == true ? "internal" : "public"
+}
+
+resource "aws_security_group" "main" {
+  name        = "${var.project}-${var.environment}-${local.alb_name_suffix}-alb"
+  description = "${var.project}-${var.environment}-${local.alb_name_suffix}-alb"
+  vpc_id      = var.vpc_id
+  tags = merge(
+    {
+      Name = "${var.project}-${var.environment}-${local.alb_name_suffix}-alb"
+    },
+    var.tags
+  )
+}
+
+resource "aws_vpc_security_group_ingress_rule" "http" {
+  security_group_id = aws_security_group.main.id
+  ip_protocol       = "tcp"
+  from_port         = 80
+  to_port           = 80
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "https" {
+  security_group_id = aws_security_group.main.id
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_egress_rule" "ipv4" {
+  security_group_id = aws_security_group.main.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_egress_rule" "ipv6" {
+  security_group_id = aws_security_group.main.id
+  ip_protocol       = "-1"
+  cidr_ipv6         = "::/0"
+}
+
+resource "aws_lb" "main" {
+  name                       = "${var.project}-${var.environment}-${local.alb_name_suffix}"
+  internal                   = var.internal
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.main.id]
+  subnets                    = var.subnet_ids
+  enable_deletion_protection = false
+  idle_timeout               = var.idle_timeout
+  tags                       = var.tags
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "80"
+  protocol          = "HTTP"
+  tags              = var.tags
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+
+}
+
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.certificate_arn
+  tags              = var.tags
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Invalid Request"
+      status_code  = "200"
+    }
+  }
+
+}

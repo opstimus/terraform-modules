@@ -19,4 +19,17 @@ Pin `?ref=` to a per-module tag of the form `<key>/vX.Y.Z`.
 
 ## Modules
 
-See `modules/` for the full list. (Populated as modules are migrated.)
+Each module lives at `modules/<key>/` and is versioned independently. Pin `?ref=`
+to that module's own tag (`<key>/vX.Y.Z`).
+
+### AWS
+
+`aws-acm`, `aws-alb`, `aws-api-gateway`, `aws-aurora`, `aws-aurora-dsql`, `aws-dynamodb`, `aws-ecr`, `aws-ecs-autoscaling-scheduled`, `aws-ecs-autoscaling-standard`, `aws-ecs-cluster`, `aws-ecs-service`, `aws-ecs-task`, `aws-efs`, `aws-github-runner`, `aws-iam-role`, `aws-iam-user`, `aws-kms`, `aws-lambda`, `aws-log-group`, `aws-s3-bucket`, `aws-secret`, `aws-site-to-site-vpn`, `aws-sns`, `aws-sqs`, `aws-target-group`, `aws-task-definition`, `aws-vpc`
+
+### OCI
+
+`oci-backend-set`, `oci-container-instances`
+
+### Other
+
+`postgresql`
