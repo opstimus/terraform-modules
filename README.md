@@ -28,7 +28,7 @@ to that module's own tag (`<key>/vX.Y.Z`).
 
 ### OCI
 
-`oci-backend-set`, `oci-container-instances`
+`oci-backend-set`, `oci-container-instances`, `oci-instance`, `oci-kms-key`, `oci-kms-vault`, `oci-lb`, `oci-postgresql`, `oci-redis`, `oci-vcn`
 
 ### Other
 
