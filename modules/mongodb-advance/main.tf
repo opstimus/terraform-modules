@@ -30,21 +30,26 @@ resource "mongodbatlas_advanced_cluster" "main" {
   mongo_db_major_version         = var.db_version
   backup_enabled                 = var.backup_enabled
   termination_protection_enabled = var.termination_protection_enabled
-  replication_specs {
-    region_configs {
-      electable_specs {
-        instance_size = var.instance_size
-        node_count    = 3
-        disk_size_gb  = var.disk_size_gb
-      }
-      provider_name = var.provider_name
-      priority      = 7
-      region_name   = var.region
-      auto_scaling {
-        disk_gb_enabled = var.disk_gb_enabled
-      }
+
+  replication_specs = [
+    {
+      region_configs = [
+        {
+          electable_specs = {
+            instance_size = var.instance_size
+            node_count    = 3
+            disk_size_gb  = var.disk_size_gb
+          }
+          provider_name = var.provider_name
+          priority      = 7
+          region_name   = var.region
+          auto_scaling = {
+            disk_gb_enabled = var.disk_gb_enabled
+          }
+        }
+      ]
     }
-  }
+  ]
 }
 
 resource "mongodbatlas_database_user" "main" {
@@ -76,5 +81,5 @@ resource "aws_secretsmanager_secret" "full_dns" {
 }
 resource "aws_secretsmanager_secret_version" "full_dns" {
   secret_id     = aws_secretsmanager_secret.full_dns.id
-  secret_string = "mongodb+srv://${var.db_username}:${random_password.main.result}@${replace(mongodbatlas_advanced_cluster.main.connection_strings[0].standard_srv, "mongodb+srv://", "")}"
+  secret_string = "mongodb+srv://${var.db_username}:${random_password.main.result}@${replace(mongodbatlas_advanced_cluster.main.connection_strings.standard_srv, "mongodb+srv://", "")}"
 }

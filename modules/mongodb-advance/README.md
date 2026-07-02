@@ -9,16 +9,16 @@ This module sets up a MongoDB Cluster along with necessary resources. Also this 
 | Name       | Version   |
 |------------|-----------|
 | terraform  | >= 1.3.0  |
-| mongodb    | >= 1.22.0 |
-| aws        | >= 4.0    |
+| mongodb    | >= 2.5.0  |
+| aws        | >= 6.0    |
 | random     | >= 3.5.1  |
 
 ## Providers
 
 | Name  | Version   |
 |-------|-----------|
-| aws   | >= 4.0    |
-| mongo | >= 1.22.0 |
+| aws   | >= 6.0    |
+| mongo | >= 2.5.0  |
 | random| >= 3.5.1  |
 
 ## Inputs
