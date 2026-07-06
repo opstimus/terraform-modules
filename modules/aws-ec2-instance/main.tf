@@ -3,7 +3,9 @@ resource "aws_security_group" "main" {
   name        = "${var.project}-${var.environment}-${var.name}"
   description = "${var.project}-${var.environment}-${var.name}"
   vpc_id      = var.vpc_id
-  tags        = var.tags
+  tags = merge({
+    Name = "${var.project}-${var.environment}-${var.name}"
+  }, var.tags)
 }
 
 resource "aws_vpc_security_group_ingress_rule" "main" {
@@ -43,7 +45,9 @@ resource "aws_instance" "main" {
   disable_api_termination     = var.termination_protection ? true : false
   associate_public_ip_address = var.associate_public_ip_address
   iam_instance_profile        = var.iam_instance_profile != null ? var.iam_instance_profile : null
-  tags                        = var.tags
+  tags = merge({
+    Name = "${var.project}-${var.environment}-${var.name}"
+  }, var.tags)
   root_block_device {
     delete_on_termination = true
     volume_size           = var.root_volume_size
@@ -62,7 +66,9 @@ resource "aws_instance" "main" {
 
 resource "aws_eip" "main" {
   count = var.enable_eip ? 1 : 0
-  tags  = var.tags
+  tags = merge({
+    Name = "${var.project}-${var.environment}-${var.name}"
+  }, var.tags)
 }
 
 resource "aws_eip_association" "main" {

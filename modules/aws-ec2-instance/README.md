@@ -29,7 +29,7 @@ This Terraform module provisions an EC2 instance within a specified VPC and subn
 | ami                  | AMI ID                               | string        | "AMI ID"    |    no    |
 | subnet_id            | Subnet ID for the instance           | string        | -           |   yes    |
 | enable_eip           | Enable and attach Elastic IP         | bool          | false       |    no    |
-| user_data            | User data script                     | string        | -           |    no    |
+| user_data            | User data script                     | string        | null          |    no    |
 | source_dest_check    | Enable source/destination check      | bool          | true        |    no    |
 | security_group_ids   | List of existing security group IDs  | list(any)     | []          |    no    |
 | vpc_id               | VPC ID needed to create security group| string       | null        |    no    |
@@ -41,6 +41,8 @@ This Terraform module provisions an EC2 instance within a specified VPC and subn
 | ingress_rules.description | Description for the ingress rule    | string       | null        |    no    |
 | key_name             | Key pair name for the instance       | string        | null        |    no    |
 | termination_protection | Enable termination protection       | bool          | false       |    no    |
+| associate_public_ip_address | Association of Public IP Address | bool          | false       |    no    |
+| tags                 | A map of tags to assign to the resource | map(string) | {}          |    no    |
 | iam_instance_profile | IAM Instance Profile to launch the instance with | string | null | no |
 
 ## Outputs
