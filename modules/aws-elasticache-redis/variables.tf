@@ -14,6 +14,17 @@ variable "name" {
   default     = ""
 }
 
+variable "transit_encryption_mode" {
+  type        = string
+  description = "Transit encryption mode, either \"preferred\" or \"required\". Only applies when transit encryption is enabled. \"preferred\" allows both encrypted and plaintext connections and requires Redis engine 7.0.5 or above."
+  default     = "preferred"
+
+  validation {
+    condition     = contains(["preferred", "required"], var.transit_encryption_mode)
+    error_message = "transit_encryption_mode must be either \"preferred\" or \"required\"."
+  }
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map of tags to assign to the resource."

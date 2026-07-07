@@ -39,6 +39,7 @@ Resources are named `<project>-<environment>` by default. Set the optional `name
 | log_group                  | CloudWatch log group                 | string  | -       | yes      | 
 | enable_auth                | Enable authentication                | bool    | false   | no       | 
 | enable_transit_encryption  | Enable transit encryption            | bool    | false   | no       | 
+| transit_encryption_mode    | Transit encryption mode (`preferred` or `required`), applies only when transit encryption is enabled. Setting `required` while transit encryption is disabled is a plan-time error. `preferred` requires Redis engine 7.0.5+ | string  | "preferred" | no       | 
 | enable_at_rest_encryption  | Enable at-rest encryption            | bool    | false   | no       |
 | tags                       | tags                                 | `map(string)` | -       |    no    | 
 
@@ -47,6 +48,19 @@ Resources are named `<project>-<environment>` by default. Set the optional `name
 | Name                | Description                     | 
 |---------------------|---------------------------------| 
 | auth_token_secret   | The name of the Secrets Manager secret for authentication | 
+
+## Encryption behavior
+
+The auth and transit encryption inputs interact: `enable_auth = true` always enables transit encryption (an auth token requires TLS), and `transit_encryption_mode` only applies when transit encryption is enabled. `at_rest_encryption_enabled` is independent of all of these.
+
+| `enable_auth` | `enable_transit_encryption` | `transit_encryption_mode` | Result |
+|:---:|:---:|:---:|---|
+| `true` | any | `preferred` (default) | Auth token created, TLS enabled, plaintext still allowed |
+| `true` | any | `required` | Auth token created, TLS enforced — plaintext connections refused |
+| `false` | `true` | `preferred` (default) | No auth, TLS enabled, plaintext still allowed |
+| `false` | `true` | `required` | No auth, TLS enforced — plaintext connections refused |
+| `false` | `false` | `preferred` (default) | No auth, no TLS — mode is ignored |
+| `false` | `false` | `required` | ❌ Plan-time error |
 
 ## Usage examples 
 
@@ -57,20 +71,21 @@ module "elasticache_redis" {
   source                      = "github.com/opstimus/terraform-aws-elasticache-redis?ref=v<RELEASE>"
   project                     = "my-project"
   environment                 = "dev"
-  parameter_group_family      = "redis6.x"
+  parameter_group_family      = "redis7"
   node_type                   = "cache.t3.micro"
   number_of_nodes             = 1
-  engine_version              = "6.x"
+  engine_version              = "7.1"
   vpc_id                      = "vpc-0abcd1234efgh5678"
   vpc_cidr                    = "172.16.0.0/16"
   private_subnet_ids          = ["subnet-0abcd1234efgh5678"]
   log_group                   = "my-log-group"
   enable_auth                 = true
   enable_transit_encryption   = true
+  transit_encryption_mode     = "preferred"
   enable_at_rest_encryption   = true
   tags = {
-    Project = <project-name>
-    Environment = <environment-name>
+    Project     = "my-project"
+    Environment = "dev"
   }
 }
 ```
@@ -83,16 +98,64 @@ module "elasticache_redis_session" {
   project                     = "my-project"
   environment                 = "dev"
   name                        = "session"
-  parameter_group_family      = "redis6.x"
+  parameter_group_family      = "redis7"
   node_type                   = "cache.t3.micro"
   number_of_nodes             = 1
-  engine_version              = "6.x"
+  engine_version              = "7.1"
   vpc_id                      = "vpc-0abcd1234efgh5678"
   vpc_cidr                    = "172.16.0.0/16"
   private_subnet_ids          = ["subnet-0abcd1234efgh5678"]
   log_group                   = "my-log-group"
   enable_auth                 = true
   enable_transit_encryption   = true
+  transit_encryption_mode     = "preferred"
+  enable_at_rest_encryption   = true
+}
+```
+
+### Example 3: Authentication enabled
+
+With `enable_auth = true`, an auth token is generated and stored in Secrets Manager, and transit encryption is always enabled (regardless of `enable_transit_encryption`). The default `transit_encryption_mode` of `preferred` still allows plaintext connections — set it to `required` to enforce encryption for all clients.
+
+```hcl
+module "elasticache_redis" {
+  source                      = "github.com/opstimus/terraform-aws-elasticache-redis?ref=v<RELEASE>"
+  project                     = "my-project"
+  environment                 = "dev"
+  parameter_group_family      = "redis7"
+  node_type                   = "cache.t3.micro"
+  number_of_nodes             = 1
+  engine_version              = "7.1"
+  vpc_id                      = "vpc-0abcd1234efgh5678"
+  vpc_cidr                    = "172.16.0.0/16"
+  private_subnet_ids          = ["subnet-0abcd1234efgh5678"]
+  log_group                   = "my-log-group"
+  enable_auth                 = true
+  transit_encryption_mode     = "required"
+  enable_at_rest_encryption   = true
+}
+```
+
+### Example 4: No authentication, transit encryption only
+
+With `enable_auth = false`, no auth token or secret is created. Transit encryption can still be enabled via `enable_transit_encryption`, and `transit_encryption_mode` applies to it. If both flags are false, transit encryption is off and `transit_encryption_mode` is ignored.
+
+```hcl
+module "elasticache_redis" {
+  source                      = "github.com/opstimus/terraform-aws-elasticache-redis?ref=v<RELEASE>"
+  project                     = "my-project"
+  environment                 = "dev"
+  parameter_group_family      = "redis7"
+  node_type                   = "cache.t3.micro"
+  number_of_nodes             = 1
+  engine_version              = "7.1"
+  vpc_id                      = "vpc-0abcd1234efgh5678"
+  vpc_cidr                    = "172.16.0.0/16"
+  private_subnet_ids          = ["subnet-0abcd1234efgh5678"]
+  log_group                   = "my-log-group"
+  enable_auth                 = false
+  enable_transit_encryption   = true
+  transit_encryption_mode     = "preferred"
   enable_at_rest_encryption   = true
 }
 ```

@@ -91,6 +91,7 @@ resource "aws_elasticache_replication_group" "main" {
   engine_version             = var.engine_version
   auth_token                 = length(random_password.main) > 0 ? random_password.main[0].result : null
   transit_encryption_enabled = var.enable_auth ? true : var.enable_transit_encryption
+  transit_encryption_mode    = (var.enable_auth || var.enable_transit_encryption) ? var.transit_encryption_mode : null
   at_rest_encryption_enabled = var.enable_at_rest_encryption
   node_type                  = var.node_type
   num_cache_clusters         = var.number_of_nodes
@@ -104,5 +105,12 @@ resource "aws_elasticache_replication_group" "main" {
     destination_type = "cloudwatch-logs"
     log_format       = "text"
     log_type         = "slow-log"
+  }
+
+  lifecycle {
+    precondition {
+      condition     = var.enable_auth || var.enable_transit_encryption || var.transit_encryption_mode == "preferred"
+      error_message = "transit_encryption_mode = \"required\" requires transit encryption to be enabled. Set enable_transit_encryption = true (existing unencrypted clusters must migrate via \"preferred\" first)."
+    }
   }
 }
