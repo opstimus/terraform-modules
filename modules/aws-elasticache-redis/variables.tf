@@ -8,6 +8,12 @@ variable "environment" {
   description = "Environment name"
 }
 
+variable "name" {
+  type        = string
+  description = "Optional name segment appended to resource names. Leave empty to keep the original naming and avoid recreating existing resources."
+  default     = ""
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map of tags to assign to the resource."

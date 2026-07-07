@@ -1,5 +1,5 @@
 resource "aws_ssm_parameter" "endpoint" {
-  name  = "/${var.project}/${var.environment}/central/redis/endpoint"
+  name  = "${local.ssm_base_path}/redis/endpoint"
   type  = "String"
   value = aws_elasticache_replication_group.main.primary_endpoint_address
 }
