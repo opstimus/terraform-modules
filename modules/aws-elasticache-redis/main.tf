@@ -1,0 +1,116 @@
+locals {
+  # Empty var.name keeps the legacy names so existing deployments are not recreated
+  name_prefix   = var.name != "" ? "${var.project}-${var.environment}-${var.name}" : "${var.project}-${var.environment}"
+  ssm_base_path = var.name != "" ? "/${var.project}/${var.environment}/${var.name}" : "/${var.project}/${var.environment}/central"
+}
+
+resource "aws_security_group" "main" {
+  name        = "${local.name_prefix}-redis"
+  description = "${local.name_prefix}-redis"
+  vpc_id      = var.vpc_id
+  tags = merge(
+    {
+      Name = "${local.name_prefix}-redis"
+    },
+    var.tags
+  )
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_vpc" {
+  security_group_id = aws_security_group.main.id
+  ip_protocol       = "tcp"
+  from_port         = 6379
+  to_port           = 6379
+  cidr_ipv4         = var.vpc_cidr
+}
+
+resource "aws_vpc_security_group_egress_rule" "ipv4" {
+  security_group_id = aws_security_group.main.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_egress_rule" "ipv6" {
+  security_group_id = aws_security_group.main.id
+  ip_protocol       = "-1"
+  cidr_ipv6         = "::/0"
+}
+
+resource "aws_elasticache_parameter_group" "main" {
+  count  = length(var.parameter_group_parameters) != 0 ? 1 : 0
+  name   = local.name_prefix
+  family = var.parameter_group_family
+
+  dynamic "parameter" {
+    for_each = var.parameter_group_parameters
+    content {
+      name  = parameter.value.name
+      value = parameter.value.value
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_elasticache_subnet_group" "main" {
+  name       = local.name_prefix
+  subnet_ids = var.private_subnet_ids
+  tags = merge(
+    {
+      Name = local.name_prefix
+    },
+    var.tags
+  )
+}
+
+resource "random_password" "main" {
+  count            = var.enable_auth ? 1 : 0
+  length           = 16
+  special          = true
+  override_special = "!&#$^<>-"
+}
+
+resource "aws_secretsmanager_secret" "main" {
+  count = var.enable_auth ? 1 : 0
+  name  = "${local.name_prefix}-redis"
+}
+
+resource "aws_secretsmanager_secret_version" "main" {
+  count         = var.enable_auth ? 1 : 0
+  secret_id     = aws_secretsmanager_secret.main[0].id
+  secret_string = random_password.main[0].result
+}
+
+resource "aws_elasticache_replication_group" "main" {
+  replication_group_id       = local.name_prefix
+  description                = "Primary replication group"
+  apply_immediately          = true
+  auto_minor_version_upgrade = false
+  engine_version             = var.engine_version
+  auth_token                 = length(random_password.main) > 0 ? random_password.main[0].result : null
+  transit_encryption_enabled = var.enable_auth ? true : var.enable_transit_encryption
+  transit_encryption_mode    = (var.enable_auth || var.enable_transit_encryption) ? var.transit_encryption_mode : null
+  at_rest_encryption_enabled = var.enable_at_rest_encryption
+  node_type                  = var.node_type
+  num_cache_clusters         = var.number_of_nodes
+  parameter_group_name       = length(aws_elasticache_parameter_group.main) > 0 ? aws_elasticache_parameter_group.main[0].name : "default.${var.parameter_group_family}"
+  port                       = 6379
+  subnet_group_name          = aws_elasticache_subnet_group.main.name
+  security_group_ids         = [aws_security_group.main.id]
+
+  log_delivery_configuration {
+    destination      = var.log_group
+    destination_type = "cloudwatch-logs"
+    log_format       = "text"
+    log_type         = "slow-log"
+  }
+
+  lifecycle {
+    precondition {
+      condition     = var.enable_auth || var.enable_transit_encryption || var.transit_encryption_mode == "preferred"
+      error_message = "transit_encryption_mode = \"required\" requires transit encryption to be enabled. Set enable_transit_encryption = true (existing unencrypted clusters must migrate via \"preferred\" first)."
+    }
+  }
+}
