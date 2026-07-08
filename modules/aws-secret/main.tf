@@ -5,9 +5,9 @@ resource "aws_secretsmanager_secret" "main" {
 
 resource "random_password" "main" {
   count            = var.secret_string == "random" ? 1 : 0
-  length           = 16
-  special          = true
-  override_special = "!#$%&*?"
+  length           = var.random_length
+  special          = var.random_special
+  override_special = var.random_override_special
 }
 
 resource "aws_secretsmanager_secret_version" "example" {
