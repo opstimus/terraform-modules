@@ -1,0 +1,30 @@
+name: PR title check
+
+# Enforce PR titles of the form: "DEVOPS-<number>: <description>"
+# e.g. "DEVOPS-473: Add release module dropdown"
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title format
+        # Title is passed via env (not inlined) to avoid shell injection.
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PR title: ${TITLE}"
+          re='^DEVOPS-[0-9]+: .+'
+          if [[ ! "${TITLE}" =~ $re ]]; then
+            echo "::error::PR title must match 'DEVOPS-<number>: <description>' (e.g. 'DEVOPS-473: Add release dropdown'). Got: ${TITLE}"
+            exit 1
+          fi
+          echo "PR title OK"
