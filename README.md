@@ -24,7 +24,7 @@ to that module's own tag (`<key>/vX.Y.Z`).
 
 ### AWS
 
-`aws-acm`, `aws-alb`, `aws-api-gateway`, `aws-aurora`, `aws-aurora-dsql`, `aws-dynamodb`, `aws-ec2-instance`, `aws-ecr`, `aws-ecs-autoscaling-scheduled`, `aws-ecs-autoscaling-standard`, `aws-ecs-cluster`, `aws-ecs-service`, `aws-ecs-task`, `aws-efs`, `aws-elasticache-redis`, `aws-github-runner`, `aws-iam-role`, `aws-iam-user`, `aws-kms`, `aws-lambda`, `aws-log-group`, `aws-rds`, `aws-s3-bucket`, `aws-secret`, `aws-ses`, `aws-site-to-site-vpn`, `aws-sns`, `aws-sqs`, `aws-target-group`, `aws-task-definition`, `aws-vpc`
+`aws-acm`, `aws-alb`, `aws-api-gateway`, `aws-aurora`, `aws-aurora-dsql`, `aws-dynamodb`, `aws-ec2-instance`, `aws-ecr`, `aws-ecs-autoscaling-scheduled`, `aws-ecs-autoscaling-standard`, `aws-ecs-cluster`, `aws-ecs-service`, `aws-ecs-task`, `aws-efs`, `aws-elasticache-redis`, `aws-github-runner`, `aws-iam-role`, `aws-iam-user`, `aws-kms`, `aws-lambda`, `aws-log-group`, `aws-msk-cluster`, `aws-rds`, `aws-s3-bucket`, `aws-secret`, `aws-ses`, `aws-site-to-site-vpn`, `aws-sns`, `aws-sqs`, `aws-target-group`, `aws-task-definition`, `aws-vpc`
 
 ### OCI
 
