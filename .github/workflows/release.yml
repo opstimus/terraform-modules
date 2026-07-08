@@ -4,9 +4,53 @@ on:
   workflow_dispatch:
     inputs:
       module:
-        description: "Module key under modules/ (e.g. aws-vpc)"
+        description: "Module to release"
         required: true
-        type: string
+        type: choice
+        options:
+          - aws-acm
+          - aws-alb
+          - aws-api-gateway
+          - aws-aurora
+          - aws-aurora-dsql
+          - aws-dynamodb
+          - aws-ec2-instance
+          - aws-ecr
+          - aws-ecs-autoscaling-scheduled
+          - aws-ecs-autoscaling-standard
+          - aws-ecs-cluster
+          - aws-ecs-service
+          - aws-ecs-task
+          - aws-efs
+          - aws-elasticache-redis
+          - aws-github-runner
+          - aws-iam-role
+          - aws-iam-user
+          - aws-kms
+          - aws-lambda
+          - aws-log-group
+          - aws-msk-cluster
+          - aws-rds
+          - aws-s3-bucket
+          - aws-secret
+          - aws-ses
+          - aws-site-to-site-vpn
+          - aws-sns
+          - aws-sqs
+          - aws-target-group
+          - aws-task-definition
+          - aws-vpc
+          - mongodb-advance
+          - oci-backend-set
+          - oci-container-instances
+          - oci-instance
+          - oci-kms-key
+          - oci-kms-vault
+          - oci-lb
+          - oci-postgresql
+          - oci-redis
+          - oci-vcn
+          - postgresql
       bump:
         description: "Semver bump"
         required: true
