@@ -1,0 +1,38 @@
+name: Release options sync
+
+# Fails if the release workflow's `module` dropdown options drift from the set of
+# directories under modules/. Update the options in release.yml when adding or
+# removing a module.
+
+on:
+  pull_request:
+    paths:
+      - "modules/**"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release-options-sync.yml"
+  push:
+    branches: [main]
+    paths:
+      - "modules/**"
+      - ".github/workflows/release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: modules/ vs release.yml module options
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual=$(ls -d modules/*/ | xargs -n1 basename | sort)
+          declared=$(yq e '.on.workflow_dispatch.inputs.module.options[]' \
+            .github/workflows/release.yml | sort)
+          if ! diff <(printf '%s\n' "$actual") <(printf '%s\n' "$declared"); then
+            echo "::error::release.yml 'module' dropdown is out of sync with modules/ (< = missing from release.yml options, > = stale option). Update .github/workflows/release.yml."
+            exit 1
+          fi
+          echo "In sync: $(printf '%s\n' "$actual" | wc -l | tr -d ' ') modules."
