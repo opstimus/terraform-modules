@@ -1,6 +1,23 @@
-# terraform-modules
+<div align="center">
 
-Monorepo of opstimus Terraform modules, organized by provider.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/opstimus-logo-white.svg">
+  <img src=".github/assets/opstimus-logo.svg" width="380" alt="Opstimus">
+</picture>
+
+<h3>Terraform Modules</h3>
+
+<p>A single, versioned home for Opstimus' reusable Terraform modules — AWS, OCI, and more.</p>
+
+[![Terraform](https://img.shields.io/badge/Terraform-%E2%89%A5%201.3-21327A?style=flat-square&logo=terraform&logoColor=white)](https://developer.hashicorp.com/terraform)
+[![AWS](https://img.shields.io/badge/AWS-DA794F?style=flat-square&logo=amazonwebservices&logoColor=white)](modules/)
+[![OCI](https://img.shields.io/badge/OCI-C6543C?style=flat-square&logo=oracle&logoColor=white)](modules/)
+[![Modules](https://img.shields.io/badge/modules-43-1C255C?style=flat-square)](modules/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-363A66?style=flat-square)](LICENSE)
+
+</div>
+
+---
 
 ## Layout
 
