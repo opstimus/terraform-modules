@@ -153,18 +153,33 @@ jobs:
             echo "_First release for this module — no previous version to diff._" >> "$GITHUB_STEP_SUMMARY"
             echo "First release for ${MOD}; no diff."
           else
-            echo "### Changes in \`modules/${MOD}\` since \`${OLD_TAG}\`" >> "$GITHUB_STEP_SUMMARY"
             diff_out=$(git diff "${OLD_TAG}..${GITHUB_SHA}" -- "modules/${MOD}")
+            stat_out=$(git diff --stat "${OLD_TAG}..${GITHUB_SHA}" -- "modules/${MOD}")
             if [ -z "$diff_out" ]; then
-              echo "_No changes in the module since ${OLD_TAG} — you would be re-releasing identical content._" >> "$GITHUB_STEP_SUMMARY"
+              echo "⚠️ _No changes in \`modules/${MOD}\` since \`${OLD_TAG}\` — you would be re-releasing identical content._" >> "$GITHUB_STEP_SUMMARY"
               echo "::warning::No changes in modules/${MOD} since ${OLD_TAG}."
             else
+              # Fence longer than any backtick run in the diff, so a README's ```hcl
+              # block inside the diff can't terminate the code block early.
+              maxticks=$(printf '%s' "$diff_out" | grep -oE '`+' | awk 'length>m{m=length} END{print m+0}')
+              n=$(( maxticks < 3 ? 3 : maxticks + 1 ))
+              fence=$(printf '%*s' "$n" '' | tr ' ' '`')
+              total=$(printf '%s\n' "$diff_out" | wc -l | tr -d ' ')
               {
-                echo '```diff'
-                printf '%s\n' "$diff_out" | head -n 500
+                echo "### Changes in \`modules/${MOD}\` since \`${OLD_TAG}\`"
+                echo ""
                 echo '```'
-                total=$(printf '%s\n' "$diff_out" | wc -l | tr -d ' ')
-                if [ "$total" -gt 500 ]; then echo "_diff truncated to 500 lines; full diff in the job log._"; fi
+                printf '%s\n' "$stat_out"
+                echo '```'
+                echo ""
+                echo "<details><summary>Full diff (${total} lines)</summary>"
+                echo ""
+                echo "${fence}diff"
+                printf '%s\n' "$diff_out" | head -n 1000
+                echo "${fence}"
+                if [ "$total" -gt 1000 ]; then echo ""; echo "_diff truncated to 1000 lines; full diff in the job log._"; fi
+                echo ""
+                echo "</details>"
               } >> "$GITHUB_STEP_SUMMARY"
             fi
             echo "=== full diff ${OLD_TAG}..HEAD (modules/${MOD}) ==="
