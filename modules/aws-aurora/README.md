@@ -84,7 +84,7 @@ This module sets up an Aurora RDS Cluster along with necessary resources like se
 
 ```hcl
 module "aurora_rds_cluster" {
-  source = "https://github.com/opstimus/terraform-aws-aurora?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-aurora?ref=aws-aurora/v<RELEASE>"
 
   project                       = "my-project"
   environment                   = "production"
@@ -107,7 +107,7 @@ module "aurora_rds_cluster" {
 
 ```hcl
 module "aurora_rds_cluster" {
-  source = "https://github.com/opstimus/terraform-aws-aurora?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-aurora?ref=aws-aurora/v<RELEASE>"
   project                       = "my-project"
   environment                   = "production"
   vpc_id                        = "vpc-123456"
@@ -138,7 +138,7 @@ Use separate cluster-level and instance-level parameters. Omit either list to us
 
 ```hcl
 module "aurora_rds_cluster" {
-  source = "https://github.com/opstimus/terraform-aws-aurora?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-aurora?ref=aws-aurora/v<RELEASE>"
 
   project                       = "my-project"
   environment                   = "production"

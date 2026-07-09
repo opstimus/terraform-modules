@@ -42,7 +42,7 @@ This Terraform module creates an Application Load Balancer (ALB) along with a se
 
 ```hcl
 module "alb" {
-  source          = "https://github.com/opstimus/terraform-aws-alb?ref=v<RELEASE>"
+  source          = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-alb?ref=aws-alb/v<RELEASE>"
   project         = "my-project"
   environment     = "production"
   vpc_id          = "vpc-12345"

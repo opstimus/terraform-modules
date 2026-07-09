@@ -46,7 +46,7 @@ This example shows how to use the Secrets Manager module to create a secret with
 
 ```hcl
 module "secrets_manager" {
-  source        = "github.com/opstimus/terraform-aws-secret?ref=v<RELEASE>"
+  source        = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-secret?ref=aws-secret/v<RELEASE>"
   project       = "my-project"
   environment   = "dev"
   name          = "db-password"
@@ -64,7 +64,7 @@ Generate a 64-character alphanumeric value (no special characters).
 
 ```hcl
 module "secrets_manager" {
-  source         = "github.com/opstimus/terraform-aws-secret?ref=v<RELEASE>"
+  source         = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-secret?ref=aws-secret/v<RELEASE>"
   project        = "my-project"
   environment    = "dev"
   name           = "api-key"

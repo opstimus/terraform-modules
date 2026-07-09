@@ -41,7 +41,7 @@ This Terraform module provisions an EC2 instance configured as a GitHub Actions 
 
 ```hcl
 module "github_runner" {
-  source = "github.com/opstimus/terraform-aws-github-runner?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-github-runner?ref=aws-github-runner/v<RELEASE>"
 
   project           = "my-project"
   environment       = "stg"

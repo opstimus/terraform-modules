@@ -47,7 +47,7 @@ This Terraform module provisions an AWS Load Balancer target group along with li
 
 ```hcl
 module "lb_target_group" {
-  source                  = "https://github.com/opstimus/terraform-aws-target-group?ref=v<RELEASE>"
+  source                  = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-target-group?ref=aws-target-group/v<RELEASE>"
   project                 = "my-project"
   environment             = "production"
   service                 = "api"

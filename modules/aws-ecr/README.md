@@ -42,7 +42,7 @@ This Terraform module creates an Amazon ECR (Elastic Container Registry) reposit
 
 ```hcl
 module "ecr_repository" {
-  source                = "github.com/opstimus/terraform-aws-ecr?ref=v<RELEASE>"
+  source                = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ecr?ref=aws-ecr/v<RELEASE>"
 
   project               = "my-project"
   service               = "backend"
@@ -58,7 +58,7 @@ module "ecr_repository" {
 
 ```hcl
 module "ecr_repository" {
-  source                = "github.com/opstimus/terraform-aws-ecr?ref=v<RELEASE>"
+  source                = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ecr?ref=aws-ecr/v<RELEASE>"
 
   project               = "my-project"
   service               = "backend"

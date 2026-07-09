@@ -57,7 +57,7 @@ This Terraform module creates an ECS Service with optional CloudWatch Alarms for
 
 ```hcl
 module "ecs_service" {
-  source                                = "github.com/opstimus/terraform-aws-ecs-service?ref=v<RELEASE>"
+  source                                = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ecs-service?ref=aws-ecs-service/v<RELEASE>"
   project                               = "example-project"
   environment                           = "dev"
   service                               = "api"

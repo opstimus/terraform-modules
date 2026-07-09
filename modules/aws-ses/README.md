@@ -40,7 +40,7 @@ Notes:
 
 ```hcl
 module "ses_domain" {
-  source        = "github.com/opstimus/terraform-aws-ses?ref=v<RELEASE>"
+  source        = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ses?ref=aws-ses/v<RELEASE>"
   identity_type = "domain"
   ses_domain    = "example.com"
 }
@@ -52,7 +52,7 @@ Note: The module triggers domain verification but does not create DNS records. T
 
 ```hcl
 module "ses_email" {
-  source        = "github.com/opstimus/terraform-aws-ses?ref=v<RELEASE>"
+  source        = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ses?ref=aws-ses/v<RELEASE>"
   identity_type = "email"
   ses_email     = "notify@example.com"
 }

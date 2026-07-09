@@ -41,7 +41,7 @@ This Terraform module creates an AWS CloudWatch Log Group with a customizable na
 
 ```hcl
 module "cloudwatch_log_group" {
-  source            = "https://github.com/opstimus/terraform-aws-log-group?ref=v<RELEASE>"
+  source            = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-log-group?ref=aws-log-group/v<RELEASE>"
   project           = "my-project"
   environment       = "production"
   name              = "api"

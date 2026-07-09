@@ -49,7 +49,7 @@ This example shows how to use the DynamoDB Table module to create a table with a
 
 ```hcl
 module "dynamodb_table" {
-  source                = "github.com/opstimus/terraform-aws-dynamodb?ref=v<RELEASE>"
+  source                = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-dynamodb?ref=aws-dynamodb/v<RELEASE>"
 
   project               = "my-project"
   environment           = "dev"
