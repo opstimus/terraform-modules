@@ -58,7 +58,7 @@ This module sets up a MongoDB Cluster along with necessary resources. Also this 
 
 ```hcl
 module "mongodb_cluster" {
-  source = "https://github.com/opstimus/terraform-mongodb-advance?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/mongodb-advance?ref=mongodb-advance/v<RELEASE>"
 
   project                       = "my-project"
   environment                   = "production"

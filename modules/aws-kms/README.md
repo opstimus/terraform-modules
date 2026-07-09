@@ -40,7 +40,7 @@ This Terraform module provisions an AWS KMS (Key Management Service) key and an 
 
 ```hcl
 module "kms_key" {
-  source              = "github.com/opstimus/terraform-aws-kms?ref=v<RELEASE>"
+  source              = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-kms?ref=aws-kms/v<RELEASE>"
   project             = "my-project"
   environment         = "dev"
   resource_name       = "my-key"
@@ -60,7 +60,7 @@ output "key_arn" {
 
 ```hcl
 module "kms_key" {
-  source        = "github.com/opstimus/terraform-aws-kms?ref=v<RELEASE>"
+  source        = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-kms?ref=aws-kms/v<RELEASE>"
   project       = "my-project"
   environment   = "dev"
   resource_name = "my-dsql-key"

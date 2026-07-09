@@ -45,7 +45,7 @@ This example demonstrates how to use the IAM Role module to create a role with a
 
 ```hcl
 module "iam_role" {
-  source              = "github.com/opstimus/terraform-aws-iam-role?ref=v<RELEASE>"
+  source              = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-iam-role?ref=aws-iam-role/v<RELEASE>"
 
   project             = "my-project"
   environment         = "dev"

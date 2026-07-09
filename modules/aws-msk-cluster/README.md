@@ -77,7 +77,7 @@ The bootstrap broker string is also written to SSM Parameter Store at
 
 ```hcl
 module "msk" {
-  source                 = "github.com/opstimus/terraform-aws-msk-cluster?ref=v<RELEASE>"
+  source                 = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-msk-cluster?ref=aws-msk-cluster/v<RELEASE>"
   project                = "my-project"
   environment            = "dev"
   name                   = "events"
@@ -101,7 +101,7 @@ module "msk" {
 
 ```hcl
 module "msk" {
-  source                          = "github.com/opstimus/terraform-aws-msk-cluster?ref=v<RELEASE>"
+  source                          = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-msk-cluster?ref=aws-msk-cluster/v<RELEASE>"
   project                         = "my-project"
   environment                     = "prod"
   name                            = "events"

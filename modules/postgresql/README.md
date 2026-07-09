@@ -55,7 +55,7 @@ provider "postgresql" {
 }
 
 module "postgresql_app" {
-  source = "github.com/opstimus/terraform-postgresql?ref=v1.0.0"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/postgresql?ref=postgresql/v1.0.0"
 
   project         = local.project
   environment     = var.environment
