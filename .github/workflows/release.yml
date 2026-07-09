@@ -150,40 +150,27 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "Release plan: ${MOD} ${{ steps.compute.outputs.old_version }} -> ${{ steps.compute.outputs.new_version }} (${NEW_TAG})"
           if [ -z "$OLD_TAG" ]; then
-            echo "_First release for this module — no previous version to diff._" >> "$GITHUB_STEP_SUMMARY"
-            echo "First release for ${MOD}; no diff."
+            echo "_First release for this module — no previous version to compare._" >> "$GITHUB_STEP_SUMMARY"
+            echo "First release for ${MOD}."
           else
-            diff_out=$(git diff "${OLD_TAG}..${GITHUB_SHA}" -- "modules/${MOD}")
-            stat_out=$(git diff --stat "${OLD_TAG}..${GITHUB_SHA}" -- "modules/${MOD}")
-            if [ -z "$diff_out" ]; then
-              echo "⚠️ _No changes in \`modules/${MOD}\` since \`${OLD_TAG}\` — you would be re-releasing identical content._" >> "$GITHUB_STEP_SUMMARY"
-              echo "::warning::No changes in modules/${MOD} since ${OLD_TAG}."
+            raw=$(git log --no-merges --format='%H%x09%s' "${OLD_TAG}..${GITHUB_SHA}" -- "modules/${MOD}")
+            if [ -z "$raw" ]; then
+              echo "⚠️ _No new commits in \`modules/${MOD}\` since \`${OLD_TAG}\` — you would be re-releasing identical content._" >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::No commits in modules/${MOD} since ${OLD_TAG}."
             else
-              # Fence longer than any backtick run in the diff, so a README's ```hcl
-              # block inside the diff can't terminate the code block early.
-              maxticks=$(printf '%s' "$diff_out" | grep -oE '`+' | awk 'length>m{m=length} END{print m+0}')
-              n=$(( maxticks < 3 ? 3 : maxticks + 1 ))
-              fence=$(printf '%*s' "$n" '' | tr ' ' '`')
-              total=$(printf '%s\n' "$diff_out" | wc -l | tr -d ' ')
               {
-                echo "### Changes in \`modules/${MOD}\` since \`${OLD_TAG}\`"
+                echo "### Commits in \`modules/${MOD}\` since \`${OLD_TAG}\`"
                 echo ""
-                echo '```'
-                printf '%s\n' "$stat_out"
-                echo '```'
-                echo ""
-                echo "<details><summary>Full diff (${total} lines)</summary>"
-                echo ""
-                echo "${fence}diff"
-                printf '%s\n' "$diff_out" | head -n 1000
-                echo "${fence}"
-                if [ "$total" -gt 1000 ]; then echo ""; echo "_diff truncated to 1000 lines; full diff in the job log._"; fi
-                echo ""
-                echo "</details>"
+                echo "| Commit | Message |"
+                echo "|--------|---------|"
+                printf '%s\n' "$raw" | while IFS=$'\t' read -r sha subj; do
+                  subj=${subj//|/\\|}
+                  echo "| [\`${sha:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${sha}) | ${subj} |"
+                done
               } >> "$GITHUB_STEP_SUMMARY"
             fi
-            echo "=== full diff ${OLD_TAG}..HEAD (modules/${MOD}) ==="
-            printf '%s\n' "$diff_out"
+            echo "=== commits ${OLD_TAG}..HEAD (modules/${MOD}) ==="
+            printf '%s\n' "$raw"
           fi
 
   # Release: gated by the prod environment (approval). Uses the exact tag + commit
