@@ -7,6 +7,31 @@ CLAUDE.md
 .impeccable/
 .superpowers/
 
-# Terraform working artifacts (validation/init litter; not for reusable modules)
-**/.terraform/
-**/.terraform.lock.hcl
+# Terraform (applies to all modules; consolidated from per-module .gitignore)
+.terraform/
+**/.terraform/*
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+*gitignore*.tf
+
+# Build / misc artifacts
+dist/
+*.bak
+*.log
+*.pem
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
