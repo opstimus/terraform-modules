@@ -12,6 +12,10 @@ permissions:
 
 jobs:
   pr-title:
+    # Bot PRs (e.g. Dependabot's "Bump ..." titles) don't follow the DEVOPS-<n>
+    # convention; skip the check for them (a skipped job still satisfies a
+    # required status check).
+    if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - name: Validate PR title format

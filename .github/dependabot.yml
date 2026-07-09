@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Keep the GitHub Actions used in workflows up to date.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Group all action bumps into a single weekly PR to reduce noise.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
