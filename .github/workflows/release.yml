@@ -58,12 +58,19 @@ on:
         options: [patch, minor, major]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  release:
+  # Plan: compute old->new version and show the module diff in the run summary.
+  # Runs immediately (no environment) so the approver can review before approving.
+  plan:
     runs-on: ubuntu-latest
-    environment: prod
+    outputs:
+      tag: ${{ steps.compute.outputs.tag }}
+      old_tag: ${{ steps.compute.outputs.old_tag }}
+      old_version: ${{ steps.compute.outputs.old_version }}
+      new_version: ${{ steps.compute.outputs.new_version }}
+      sha: ${{ steps.compute.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -86,10 +93,10 @@ jobs:
           set -euo pipefail
           MOD="${{ inputs.module }}"
           test -d "modules/${MOD}" || { echo "::error::modules/${MOD} not found"; exit 1; }
-          ls modules/${MOD}/*.tf >/dev/null 2>&1 || { echo "::error::no .tf files in modules/${MOD}"; exit 1; }
+          ls "modules/${MOD}"/*.tf >/dev/null 2>&1 || { echo "::error::no .tf files in modules/${MOD}"; exit 1; }
 
-      - name: Compute next version
-        id: ver
+      - name: Compute versions
+        id: compute
         shell: bash
         run: |
           set -euo pipefail
@@ -97,8 +104,10 @@ jobs:
           git fetch --tags --quiet
           LATEST=$(git tag -l "${MOD}/v*" | sed "s#^${MOD}/v##" | sort -V | tail -n1 || true)
           if [ -z "$LATEST" ]; then
+            OLD_VERSION="(none)"; OLD_TAG=""
             NEXT="1.0.0"
           else
+            OLD_VERSION="$LATEST"; OLD_TAG="${MOD}/v${LATEST}"
             IFS=. read -r MAJOR MINOR PATCH <<< "$LATEST"
             case "${{ inputs.bump }}" in
               major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0;;
@@ -111,8 +120,85 @@ jobs:
           if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
             echo "::error::tag ${TAG} already exists"; exit 1
           fi
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "Next tag: ${TAG}"
+          {
+            echo "tag=${TAG}"
+            echo "old_tag=${OLD_TAG}"
+            echo "old_version=${OLD_VERSION}"
+            echo "new_version=${NEXT}"
+            echo "sha=${GITHUB_SHA}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Release plan summary + diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD="${{ inputs.module }}"
+          OLD_TAG="${{ steps.compute.outputs.old_tag }}"
+          NEW_TAG="${{ steps.compute.outputs.tag }}"
+          {
+            echo "## Release plan"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| Module | \`${MOD}\` |"
+            echo "| Bump | ${{ inputs.bump }} |"
+            echo "| Old version | ${{ steps.compute.outputs.old_version }} |"
+            echo "| New version | ${{ steps.compute.outputs.new_version }} |"
+            echo "| New tag | \`${NEW_TAG}\` |"
+            echo "| Commit | \`${GITHUB_SHA}\` |"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Release plan: ${MOD} ${{ steps.compute.outputs.old_version }} -> ${{ steps.compute.outputs.new_version }} (${NEW_TAG})"
+          if [ -z "$OLD_TAG" ]; then
+            echo "_First release for this module — no previous version to diff._" >> "$GITHUB_STEP_SUMMARY"
+            echo "First release for ${MOD}; no diff."
+          else
+            echo "### Changes in \`modules/${MOD}\` since \`${OLD_TAG}\`" >> "$GITHUB_STEP_SUMMARY"
+            diff_out=$(git diff "${OLD_TAG}..${GITHUB_SHA}" -- "modules/${MOD}")
+            if [ -z "$diff_out" ]; then
+              echo "_No changes in the module since ${OLD_TAG} — you would be re-releasing identical content._" >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::No changes in modules/${MOD} since ${OLD_TAG}."
+            else
+              {
+                echo '```diff'
+                printf '%s\n' "$diff_out" | head -n 500
+                echo '```'
+                total=$(printf '%s\n' "$diff_out" | wc -l | tr -d ' ')
+                if [ "$total" -gt 500 ]; then echo "_diff truncated to 500 lines; full diff in the job log._"; fi
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+            echo "=== full diff ${OLD_TAG}..HEAD (modules/${MOD}) ==="
+            printf '%s\n' "$diff_out"
+          fi
+
+  # Release: gated by the prod environment (approval). Uses the exact tag + commit
+  # from the plan job, so the approved version/module is what gets released.
+  release:
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify plan still valid
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ needs.plan.outputs.tag }}"
+          SHA="${{ needs.plan.outputs.sha }}"
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$SHA" origin/main; then
+            echo "::error::Planned commit $SHA is not on origin/main."; exit 1
+          fi
+          git fetch --tags --quiet
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::Tag ${TAG} already exists."; exit 1
+          fi
+          echo "Verified: releasing ${TAG} at ${SHA}."
 
       - name: Create tag and GitHub release
         env:
@@ -120,9 +206,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAG="${{ steps.ver.outputs.tag }}"
+          TAG="${{ needs.plan.outputs.tag }}"
+          SHA="${{ needs.plan.outputs.sha }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "$TAG" "$GITHUB_SHA"
+          git tag "$TAG" "$SHA"
           git push origin "refs/tags/$TAG"
-          gh release create "$TAG" --title "$TAG" --target "$GITHUB_SHA" --generate-notes
+          gh release create "$TAG" --title "$TAG" --target "$SHA" --generate-notes
+          echo "## Released \`${TAG}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Released ${TAG} at ${SHA}"
