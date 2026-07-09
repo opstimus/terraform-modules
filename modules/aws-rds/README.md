@@ -87,7 +87,7 @@ This module provisions AWS RDS resources, including a DB instance, security grou
 
 ```hcl
 module "rds" {
-  source                      = "https://github.com/opstimus/terraform-aws-rds?ref=v<RELEASE>"
+  source                      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-rds?ref=aws-rds/v<RELEASE>"
   project                     = "my-project"
   environment                 = "production"
   name                        = "api"

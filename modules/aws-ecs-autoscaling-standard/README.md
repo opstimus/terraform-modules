@@ -44,7 +44,7 @@ This Terraform module sets up AWS App Autoscaling targets and policies for ECS s
 
 ```hcl
 module "app_autoscaling" {
-  source              = "github.com/opstimus/terraform-aws-ecs-autoscaling-standard?ref=v<RELEASE>"
+  source              = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ecs-autoscaling-standard?ref=aws-ecs-autoscaling-standard/v<RELEASE>"
   cluster_name        = "my-cluster"
   service_name        = "my-service"
   min_capacity        = 1

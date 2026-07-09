@@ -63,7 +63,7 @@ This Terraform module deploys an AWS Lambda function along with optional CloudWa
 
 ```hcl
 module "lambda_function" {
-  source             = "github.com/opstimus/terraform-aws-lambda?ref=v<RELEASE>"
+  source             = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-lambda?ref=aws-lambda/v<RELEASE>"
   project            = "example-project"
   environment        = "dev"
   name               = "example-function"
@@ -93,7 +93,7 @@ module "lambda_function" {
 
 ```hcl
 module "lambda_function" {
-  source             = "github.com/opstimus/terraform-aws-lambda?ref=v<RELEASE>"
+  source             = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-lambda?ref=aws-lambda/v<RELEASE>"
   project            = "example-project"
   environment        = "dev"
   name               = "example-function"
@@ -112,7 +112,7 @@ module "lambda_function" {
 
 ```hcl
 module "lambda_function" {
-  source             = "github.com/opstimus/terraform-aws-lambda?ref=v<RELEASE>"
+  source             = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-lambda?ref=aws-lambda/v<RELEASE>"
   project            = "example-project"
   environment        = "dev"
   name               = "example-function"

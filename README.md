@@ -1,6 +1,23 @@
-# terraform-modules
+<div align="center">
 
-Monorepo of opstimus Terraform modules, organized by provider.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/opstimus-logo-white.svg">
+  <img src=".github/assets/opstimus-logo.svg" width="380" alt="Opstimus">
+</picture>
+
+<h3>Terraform Modules</h3>
+
+<p>A single, versioned home for Opstimus' reusable Terraform modules — AWS, OCI, and more.</p>
+
+[![Terraform](https://img.shields.io/badge/Terraform-%E2%89%A5%201.3-21327A?style=flat-square&logo=terraform&logoColor=white)](https://developer.hashicorp.com/terraform)
+[![AWS](https://img.shields.io/badge/AWS-DA794F?style=flat-square&logo=amazonwebservices&logoColor=white)](modules/)
+[![OCI](https://img.shields.io/badge/OCI-C6543C?style=flat-square&logo=oracle&logoColor=white)](modules/)
+[![Modules](https://img.shields.io/badge/modules-43-1C255C?style=flat-square)](modules/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-363A66?style=flat-square)](LICENSE)
+
+</div>
+
+---
 
 ## Layout
 
@@ -19,17 +36,6 @@ Pin `?ref=` to a per-module tag of the form `<key>/vX.Y.Z`.
 
 ## Modules
 
-Each module lives at `modules/<key>/` and is versioned independently. Pin `?ref=`
-to that module's own tag (`<key>/vX.Y.Z`).
-
-### AWS
-
-`aws-acm`, `aws-alb`, `aws-api-gateway`, `aws-aurora`, `aws-aurora-dsql`, `aws-dynamodb`, `aws-ec2-instance`, `aws-ecr`, `aws-ecs-autoscaling-scheduled`, `aws-ecs-autoscaling-standard`, `aws-ecs-cluster`, `aws-ecs-service`, `aws-ecs-task`, `aws-efs`, `aws-elasticache-redis`, `aws-github-runner`, `aws-iam-role`, `aws-iam-user`, `aws-kms`, `aws-lambda`, `aws-log-group`, `aws-msk-cluster`, `aws-rds`, `aws-s3-bucket`, `aws-secret`, `aws-ses`, `aws-site-to-site-vpn`, `aws-sns`, `aws-sqs`, `aws-target-group`, `aws-task-definition`, `aws-vpc`
-
-### OCI
-
-`oci-backend-set`, `oci-container-instances`, `oci-instance`, `oci-kms-key`, `oci-kms-vault`, `oci-lb`, `oci-postgresql`, `oci-redis`, `oci-vcn`
-
-### Other
-
-`mongodb-advance`, `postgresql`
+See [`modules/`](modules/) for the full list. Each module lives at
+`modules/<key>/` with its own README, and is versioned independently — pin
+`?ref=` to that module's tag (`<key>/vX.Y.Z`).

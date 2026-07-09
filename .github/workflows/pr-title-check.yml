@@ -5,7 +5,9 @@ name: PR title check
 
 on:
   pull_request:
-    types: [opened, edited, reopened]
+    # synchronize: re-run on every push so the check reports on the current head
+    # commit — required otherwise the check gets stuck "waiting" after new pushes.
+    types: [opened, edited, reopened, synchronize]
 
 permissions:
   contents: read

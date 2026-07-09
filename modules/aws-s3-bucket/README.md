@@ -46,7 +46,7 @@ This Terraform module provisions an AWS S3 bucket with server-side encryption (S
 
 ```hcl
 module "s3_bucket" {
-  source            = "https://github.com/opstimus/terraform-aws-s3-bucket?ref=v<RELEASE>"
+  source            = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-s3-bucket?ref=aws-s3-bucket/v<RELEASE>"
   project           = "my-project"
   environment       = "production"
   name              = "data"
@@ -63,7 +63,7 @@ module "s3_bucket" {
 
 ```hcl
 module "s3_bucket" {
-  source                  = "https://github.com/opstimus/terraform-aws-s3-bucket?ref=v<RELEASE>"
+  source                  = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-s3-bucket?ref=aws-s3-bucket/v<RELEASE>"
   project                 = "my-project"
   environment             = "production"
   name                    = "data"
@@ -95,7 +95,7 @@ This creates a bucket named `my-project-production-data`.
 
 ```hcl
 module "s3_bucket" {
-  source            = "https://github.com/opstimus/terraform-aws-s3-bucket?ref=v<RELEASE>"
+  source            = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-s3-bucket?ref=aws-s3-bucket/v<RELEASE>"
   project           = "my-project"
   environment       = "production"
   name              = "data"

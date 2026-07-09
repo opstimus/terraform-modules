@@ -59,7 +59,7 @@ The `terraform apply` host (CI runner or local) must have the AWS CLI on `PATH` 
 
 ```hcl
 module "migrate_task_definition" {
-  source = "github.com/opstimus/terraform-aws-task-definition?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-task-definition?ref=aws-task-definition/v<RELEASE>"
 
   project               = "myapp"
   environment           = "stg"
@@ -84,7 +84,7 @@ module "migrate_task_definition" {
 }
 
 module "migrate" {
-  source = "github.com/opstimus/terraform-aws-ecs-task?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ecs-task?ref=aws-ecs-task/v<RELEASE>"
 
   project                 = "myapp"
   environment             = "stg"
@@ -99,7 +99,7 @@ module "migrate" {
 }
 
 module "ecs_service" {
-  source = "github.com/opstimus/terraform-aws-ecs-service?ref=v<RELEASE>"
+  source = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ecs-service?ref=aws-ecs-service/v<RELEASE>"
   # ...
   depends_on = [module.migrate]
 }
