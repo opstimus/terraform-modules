@@ -71,3 +71,20 @@ jobs:
         run: tflint --init
       - name: TFLint
         run: tflint --recursive
+
+  # Always-runs summary gate so a single stable check ("ci-lint-gate") can be
+  # marked as a required status check, regardless of which modules changed.
+  ci-lint-gate:
+    needs: [detect-modules, lint]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gate on lint result
+        run: |
+          # Pass when lint succeeded OR was skipped (no modules changed); fail otherwise.
+          r='${{ needs.lint.result }}'
+          if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+            echo "::error::lint result: $r"
+            exit 1
+          fi
+          echo "ok (lint: $r)"
