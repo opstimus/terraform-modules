@@ -12,6 +12,11 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded runs for the same branch/PR (a newer push wins).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release-options-sync:
     runs-on: ubuntu-latest
