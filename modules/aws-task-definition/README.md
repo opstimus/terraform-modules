@@ -45,7 +45,7 @@ This example demonstrates how to use the module to create an ECS task definition
 
 ```hcl
 module "ecs_task_definition" {
-  source                = "github.com/opstimus/terraform-aws-task-definition?ref=v<RELEASE>"
+  source                = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-task-definition?ref=aws-task-definition/v<RELEASE>"
   
   project               = "my-project"
   environment           = "production"

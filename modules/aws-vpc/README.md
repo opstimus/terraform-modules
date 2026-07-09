@@ -59,7 +59,7 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 
 ```hcl
 module "vpc" {
-  source          = "github.com/opstimus/terraform-aws-vpc?ref=v<RELEASE>"
+  source          = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-vpc?ref=aws-vpc/v<RELEASE>"
   project         = "myproject"
   environment     = "production"
   vpc_cidr        = "10.0.0.0/16"
@@ -77,7 +77,7 @@ module "vpc" {
 
 ```hcl
 module "vpc" {
-  source          = "github.com/opstimus/terraform-aws-vpc?ref=v<RELEASE>"
+  source          = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-vpc?ref=aws-vpc/v<RELEASE>"
   project         = "myproject"
   environment     = "production"
   vpc_cidr        = "10.0.0.0/16"

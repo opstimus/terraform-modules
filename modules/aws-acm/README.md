@@ -41,7 +41,7 @@ This example demonstrates how to use the module to create an ACM certificate wit
 
 ```hcl
 module "acm_certificate" {
-  source      = "github.com/opstimus/terraform-aws-acm?ref=v<RELEASE>"
+  source      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-acm?ref=aws-acm/v<RELEASE>"
   project     = "my-project"
   environment = "production"
   domain      = "example.com"

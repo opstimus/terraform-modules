@@ -45,7 +45,7 @@ Notes:
 
 ```hcl
 module "site_to_site_vpn" {
-  source                        = "github.com/opstimus/terraform-aws-site-to-site-vpn?ref=v<RELEASE>"
+  source                        = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-site-to-site-vpn?ref=aws-site-to-site-vpn/v<RELEASE>"
   project                       = "myproject"
   environment                   = "production"
   name                          = "s2s"

@@ -34,7 +34,7 @@ This Terraform module creates an AWS App Autoscaling scheduled action. It allows
 
 ```hcl
 module "app_autoscaling_scheduled_action" {
-  source           = "github.com/opstimus/terraform-aws-ecs-autoscaling-scheduled?ref=v<RELEASE>"
+  source           = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-ecs-autoscaling-scheduled?ref=aws-ecs-autoscaling-scheduled/v<RELEASE>"
   service_name     = "my-service"
   policy_name      = "my-scaling-policy"
   schedule         = "cron(0 8 * * ? *)"

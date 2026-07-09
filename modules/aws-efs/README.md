@@ -44,7 +44,7 @@ This Terraform module creates a EFS along with mount targets and its own securit
 
 ```hcl
 module "efs" {
-  source          = "github.com/opstimus/terraform-aws-efs?ref=v<RELEASE>"
+  source          = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-efs?ref=aws-efs/v<RELEASE>"
   project         = "myproject"
   environment     = "production"
   name            = "store"

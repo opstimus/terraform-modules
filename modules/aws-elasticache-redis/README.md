@@ -68,7 +68,7 @@ The auth and transit encryption inputs interact: `enable_auth = true` always ena
 
 ```hcl
 module "elasticache_redis" {
-  source                      = "github.com/opstimus/terraform-aws-elasticache-redis?ref=v<RELEASE>"
+  source                      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-elasticache-redis?ref=aws-elasticache-redis/v<RELEASE>"
   project                     = "my-project"
   environment                 = "dev"
   parameter_group_family      = "redis7"
@@ -94,7 +94,7 @@ module "elasticache_redis" {
 
 ```hcl
 module "elasticache_redis_session" {
-  source                      = "github.com/opstimus/terraform-aws-elasticache-redis?ref=v<RELEASE>"
+  source                      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-elasticache-redis?ref=aws-elasticache-redis/v<RELEASE>"
   project                     = "my-project"
   environment                 = "dev"
   name                        = "session"
@@ -119,7 +119,7 @@ With `enable_auth = true`, an auth token is generated and stored in Secrets Mana
 
 ```hcl
 module "elasticache_redis" {
-  source                      = "github.com/opstimus/terraform-aws-elasticache-redis?ref=v<RELEASE>"
+  source                      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-elasticache-redis?ref=aws-elasticache-redis/v<RELEASE>"
   project                     = "my-project"
   environment                 = "dev"
   parameter_group_family      = "redis7"
@@ -142,7 +142,7 @@ With `enable_auth = false`, no auth token or secret is created. Transit encrypti
 
 ```hcl
 module "elasticache_redis" {
-  source                      = "github.com/opstimus/terraform-aws-elasticache-redis?ref=v<RELEASE>"
+  source                      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-elasticache-redis?ref=aws-elasticache-redis/v<RELEASE>"
   project                     = "my-project"
   environment                 = "dev"
   parameter_group_family      = "redis7"
