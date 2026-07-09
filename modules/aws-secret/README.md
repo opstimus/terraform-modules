@@ -25,7 +25,7 @@ This Terraform module creates and manages AWS Secrets Manager secrets. It allows
 | project       | Project name                       | string | -       |   yes    |
 | environment   | Environment name                   | string | -       |   yes    |
 | name          | Secret name (e.g., mail-password)  | string | -       |   yes    |
-| secret_string | The secret string to store; set to `"random"` to auto-generate a value | string | null    |    no    |
+| secret_string | The secret string to store; set to `"random"` to auto-generate a value | string | null    |   no   |
 | tags          | A map of tags to assign to the secret | map(string) | {} | no |
 | random_length | Length of the generated value when `secret_string = "random"` | number | 16 | no |
 | random_special | Whether the generated value may include special characters when `secret_string = "random"` | bool | true | no |
