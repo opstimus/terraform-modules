@@ -25,7 +25,11 @@ This Terraform module creates and manages AWS Secrets Manager secrets. It allows
 | project       | Project name                       | string | -       |   yes    |
 | environment   | Environment name                   | string | -       |   yes    |
 | name          | Secret name (e.g., mail-password)  | string | -       |   yes    |
-| secret_string | The secret string to store         | string | null    |    no    |
+| secret_string | The secret string to store; set to `"random"` to auto-generate a value | string | null    |   no   |
+| tags          | A map of tags to assign to the secret | map(string) | {} | no |
+| random_length | Length of the generated value when `secret_string = "random"` | number | 16 | no |
+| random_special | Whether the generated value may include special characters when `secret_string = "random"` | bool | true | no |
+| random_override_special | Set of special characters allowed when `random_special` is true | string | `!#$%&*?` | no |
 
 ## Outputs
 
@@ -51,5 +55,21 @@ module "secrets_manager" {
     Project = <project-name>
     Environment = <environment-name>
   }
+}
+```
+
+### Random password with custom length and charset
+
+Generate a 64-character alphanumeric value (no special characters).
+
+```hcl
+module "secrets_manager" {
+  source         = "github.com/opstimus/terraform-aws-secret?ref=v<RELEASE>"
+  project        = "my-project"
+  environment    = "dev"
+  name           = "api-key"
+  secret_string  = "random"
+  random_length  = 64
+  random_special = false
 }
 ```
