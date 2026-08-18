@@ -217,3 +217,27 @@ jobs:
           gh release create "$TAG" --title "$TAG" --target "$SHA" --generate-notes
           echo "## Released \`${TAG}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "Released ${TAG} at ${SHA}"
+
+      - name: Update Module Versions table
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ needs.plan.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2; do
+            ./scripts/generate-versions-table.sh
+            if git diff --quiet -- README.md; then
+              echo "README.md unchanged, nothing to commit."
+              break
+            fi
+            git add README.md
+            git commit -m "chore: update module versions table for ${TAG}"
+            if git push origin HEAD:main; then
+              echo "Pushed versions table update for ${TAG}."
+              break
+            fi
+            echo "Push rejected, retrying (attempt ${attempt})..."
+            git reset --soft HEAD~1
+            git pull --rebase origin main
+          done
