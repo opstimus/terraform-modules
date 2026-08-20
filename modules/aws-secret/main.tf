@@ -1,6 +1,7 @@
 resource "aws_secretsmanager_secret" "main" {
-  name = "${var.project}-${var.environment}-${var.name}"
-  tags = var.tags
+  name                    = "${var.project}-${var.environment}-${var.name}"
+  recovery_window_in_days = var.recovery_window_in_days
+  tags                    = var.tags
 }
 
 resource "random_password" "main" {
