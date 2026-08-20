@@ -31,6 +31,7 @@ on:
           - aws-log-group
           - aws-msk-cluster
           - aws-rds
+          - aws-resource-scheduler
           - aws-s3-bucket
           - aws-secret
           - aws-ses

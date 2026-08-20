@@ -25,6 +25,10 @@ override.tf.json
 terraform.rc
 *gitignore*.tf
 
+# Python (lambda_function.py source in modules/)
+__pycache__/
+*.pyc
+
 # Build / misc artifacts
 dist/
 *.bak
