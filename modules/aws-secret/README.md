@@ -30,6 +30,7 @@ This Terraform module creates and manages AWS Secrets Manager secrets. It allows
 | random_length | Length of the generated value when `secret_string = "random"` | number | 16 | no |
 | random_special | Whether the generated value may include special characters when `secret_string = "random"` | bool | true | no |
 | random_override_special | Set of special characters allowed when `random_special` is true | string | `!#$%&*?` | no |
+| recovery_window_in_days | Number of days AWS waits before permanently deleting the secret; set to `0` to force immediate deletion without recovery | number | 7 | no |
 
 ## Outputs
 

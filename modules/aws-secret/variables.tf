@@ -41,3 +41,9 @@ variable "random_override_special" {
   description = "Set of special characters allowed when random_special is true."
   default     = "!#$%&*?"
 }
+
+variable "recovery_window_in_days" {
+  type        = number
+  description = "Number of days AWS Secrets Manager waits before permanently deleting the secret. Set to 0 to force immediate deletion without recovery."
+  default     = 7
+}
