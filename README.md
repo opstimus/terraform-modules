@@ -72,8 +72,8 @@ don't edit the table by hand.
 | `aws-log-group` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-log-group/v2.0.0) |
 | `aws-msk-cluster` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/aws-msk-cluster/v1.0.0) |
 | `aws-rds` | [v2.0.1](https://github.com/opstimus/terraform-modules/tree/aws-rds/v2.0.1) |
-| `aws-s3-bucket` | [v2.2.0](https://github.com/opstimus/terraform-modules/tree/aws-s3-bucket/v2.2.0) |
-| `aws-secret` | [v2.1.0](https://github.com/opstimus/terraform-modules/tree/aws-secret/v2.1.0) |
+| `aws-s3-bucket` | [v2.2.1](https://github.com/opstimus/terraform-modules/tree/aws-s3-bucket/v2.2.1) |
+| `aws-secret` | [v2.2.0](https://github.com/opstimus/terraform-modules/tree/aws-secret/v2.2.0) |
 | `aws-ses` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/aws-ses/v1.0.0) |
 | `aws-site-to-site-vpn` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-site-to-site-vpn/v2.0.0) |
 | `aws-sns` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-sns/v2.0.0) |
