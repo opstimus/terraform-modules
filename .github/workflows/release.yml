@@ -185,6 +185,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          # Deploy key on the ruleset bypass list, so the versions-table
+          # commit can be pushed to main without a PR.
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
 
       - name: Verify plan still valid
         shell: bash
@@ -225,19 +228,21 @@ jobs:
           TAG="${{ needs.plan.outputs.tag }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for attempt in 1 2; do
+          for attempt in 1 2 3; do
             ./scripts/generate-versions-table.sh
             if git diff --quiet -- README.md; then
               echo "README.md unchanged, nothing to commit."
-              break
+              exit 0
             fi
             git add README.md
             git commit -m "chore: update module versions table for ${TAG}"
             if git push origin HEAD:main; then
               echo "Pushed versions table update for ${TAG}."
-              break
+              exit 0
             fi
             echo "Push rejected, retrying (attempt ${attempt})..."
-            git reset --soft HEAD~1
-            git pull --rebase origin main
+            git fetch origin main
+            git reset --hard origin/main
           done
+          echo "::error::Failed to push versions table update for ${TAG} after 3 attempts."
+          exit 1
