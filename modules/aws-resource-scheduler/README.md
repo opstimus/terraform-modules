@@ -78,15 +78,15 @@ Behavior:
 ```hcl
 module "resource_scheduler" {
   source      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-resource-scheduler?ref=aws-resource-scheduler/v<RELEASE>"
-  project     = "app-lite"
+  project     = "my-project"
   environment = "dev"
 
-  nat_instance_ids = ["app-lite-dev-nat"]
-  rds_cluster_ids  = ["app-lite-dev-aurora"]
+  nat_instance_ids = ["my-project-dev-nat"]
+  rds_cluster_ids  = ["my-project-dev-aurora"]
 
   ecs_services = [
-    { cluster = "app-lite-dev", service = "api", desired_count = 2 },
-    { cluster = "app-lite-dev", service = "worker", desired_count = 1 },
+    { cluster = "my-project-dev", service = "api", desired_count = 2 },
+    { cluster = "my-project-dev", service = "worker", desired_count = 1 },
   ]
 
   tags = {
