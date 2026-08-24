@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import boto3
 
@@ -66,15 +67,26 @@ def stop_nat_instances(identifiers):
     return results
 
 
+def _wait_for_cluster_status(cluster_id, target_status, delay=30, max_attempts=18):
+    # RDS has no db_cluster_available / db_cluster_stopped waiters in botocore,
+    # so cluster start/stop transitions must be polled manually.
+    for _ in range(max_attempts):
+        status = rds.describe_db_clusters(DBClusterIdentifier=cluster_id)["DBClusters"][0]["Status"]
+        if status == target_status:
+            return
+        time.sleep(delay)
+    raise TimeoutError(
+        f"{cluster_id} did not reach status {target_status!r} after "
+        f"{max_attempts * delay} seconds"
+    )
+
+
 def start_rds(cluster_ids, instance_ids):
     results = []
     for cluster_id in cluster_ids:
         try:
             rds.start_db_cluster(DBClusterIdentifier=cluster_id)
-            rds.get_waiter("db_cluster_available").wait(
-                DBClusterIdentifier=cluster_id,
-                WaiterConfig={"Delay": 30, "MaxAttempts": 18},
-            )
+            _wait_for_cluster_status(cluster_id, "available")
             results.append({"cluster_id": cluster_id, "status": "available"})
         except Exception as exc:  # noqa: BLE001
             results.append({"cluster_id": cluster_id, "error": str(exc)})
@@ -96,10 +108,7 @@ def stop_rds(cluster_ids, instance_ids):
     for cluster_id in cluster_ids:
         try:
             rds.stop_db_cluster(DBClusterIdentifier=cluster_id)
-            rds.get_waiter("db_cluster_stopped").wait(
-                DBClusterIdentifier=cluster_id,
-                WaiterConfig={"Delay": 30, "MaxAttempts": 18},
-            )
+            _wait_for_cluster_status(cluster_id, "stopped")
             results.append({"cluster_id": cluster_id, "status": "stopped"})
         except Exception as exc:  # noqa: BLE001
             results.append({"cluster_id": cluster_id, "error": str(exc)})
