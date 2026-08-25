@@ -131,9 +131,12 @@ def stop_rds(cluster_ids, instance_ids):
         logger.info("rds: stopping cluster %s", cluster_id)
         try:
             rds.stop_db_cluster(DBClusterIdentifier=cluster_id)
-            _wait_for_cluster_status(cluster_id, "stopped")
-            logger.info("rds: cluster %s stopped", cluster_id)
-            results.append({"cluster_id": cluster_id, "status": "stopped"})
+            # Unlike start, don't wait for "stopped": Aurora cluster stop routinely
+            # takes well over _wait_for_cluster_status's poll budget, so the wait
+            # always timed out here anyway - it only burned Lambda time and reported
+            # a spurious error for a stop that was in fact proceeding normally.
+            logger.info("rds: cluster %s stopping (not waiting for terminal state)", cluster_id)
+            results.append({"cluster_id": cluster_id, "status": "stopping"})
         except Exception as exc:  # noqa: BLE001
             logger.error("rds: failed to stop cluster %s: %s", cluster_id, exc)
             results.append({"cluster_id": cluster_id, "error": str(exc)})

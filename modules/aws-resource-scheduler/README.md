@@ -28,10 +28,17 @@ Behavior:
   IAM policy is scoped to match — e.g. no RDS permissions are granted if neither
   `rds_cluster_ids` nor `rds_instance_ids` is set.
 - Every start/stop waits (bounded `boto3` waiter) for the resource to reach a ready
-  state before moving to the next tier, budgeted to fit inside `var.timeout`. Per-
-  resource errors are captured in the returned JSON summary rather than raised, so
-  partial failures are visible in the invoke output instead of just crashing, and a
-  re-run after a partial/timed-out invocation resumes cleanly.
+  state before moving to the next tier, budgeted to fit inside `var.timeout` — except
+  Aurora cluster stop, which returns as soon as `stop_db_cluster` is accepted (see
+  below). Per-resource errors are captured in the returned JSON summary rather than
+  raised, so partial failures are visible in the invoke output instead of just
+  crashing, and a re-run after a partial/timed-out invocation resumes cleanly.
+- **Aurora cluster stop doesn't wait for `"stopped"`.** A cluster stop routinely takes
+  longer than the poll budget below, so waiting always timed out and only added a
+  false "error" to the summary for a stop that was actually proceeding fine. `down`
+  reports cluster status `"stopping"` and moves on; standalone RDS instance stop
+  (`rds_instance_ids`) still waits, since a single instance doesn't share Aurora's
+  slow-stop behavior.
 
 ## Requirements
 
@@ -122,5 +129,6 @@ create one):
   an invoke-permission grant for callers. Give your CI/CD identity `lambda:InvokeFunction`
   on the `function_arn` output separately.
 - **`timeout` must stay under 900s** (Lambda's hard cap) and should be large enough to
-  cover the slowest resource in the sequence — RDS/Aurora start/stop waiters alone can
-  take up to ~9 minutes.
+  cover the slowest resource in the sequence — RDS/Aurora start and RDS instance stop
+  waiters alone can take up to ~9 minutes (Aurora cluster stop no longer waits, so it
+  doesn't count toward this budget).
