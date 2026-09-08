@@ -106,6 +106,26 @@ def _wait_for_cluster_status(cluster_id, target_status, delay=30, max_attempts=1
     )
 
 
+def _wait_for_instance_status(instance_id, target_status, delay=30, max_attempts=18):
+    # botocore ships a db_instance_available waiter but no db_instance_stopped one,
+    # so the stop transition has to be polled manually the same way clusters are.
+    for attempt in range(1, max_attempts + 1):
+        status = rds.describe_db_instances(
+            DBInstanceIdentifier=instance_id
+        )["DBInstances"][0]["DBInstanceStatus"]
+        logger.info(
+            "rds: %s status=%s (waiting for %s, attempt %s/%s)",
+            instance_id, status, target_status, attempt, max_attempts,
+        )
+        if status == target_status:
+            return
+        time.sleep(delay)
+    raise TimeoutError(
+        f"{instance_id} did not reach status {target_status!r} after "
+        f"{max_attempts * delay} seconds"
+    )
+
+
 def start_rds(cluster_ids, instance_ids):
     results = []
     for cluster_id in cluster_ids:
@@ -153,10 +173,7 @@ def stop_rds(cluster_ids, instance_ids):
         logger.info("rds: stopping instance %s", instance_id)
         try:
             rds.stop_db_instance(DBInstanceIdentifier=instance_id)
-            rds.get_waiter("db_instance_stopped").wait(
-                DBInstanceIdentifier=instance_id,
-                WaiterConfig={"Delay": 30, "MaxAttempts": 18},
-            )
+            _wait_for_instance_status(instance_id, "stopped")
             logger.info("rds: instance %s stopped", instance_id)
             results.append({"instance_id": instance_id, "status": "stopped"})
         except Exception as exc:  # noqa: BLE001
