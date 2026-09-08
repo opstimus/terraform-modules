@@ -22,6 +22,12 @@ rds = boto3.client("rds")
 ecs = boto3.client("ecs")
 
 
+# Only instances in these states can be started or stopped. Terminated and
+# shutting-down instances are skipped so that a name-tag lookup which still
+# matches replaced NAT instances doesn't fail the whole StopInstances call.
+_ACTIONABLE_STATES = ["pending", "running", "stopping", "stopped"]
+
+
 def _resolve_nat_instance_ids(identifiers):
     resolved = []
     for identifier in identifiers:
@@ -29,7 +35,10 @@ def _resolve_nat_instance_ids(identifiers):
             resolved.append(identifier)
             continue
         response = ec2.describe_instances(
-            Filters=[{"Name": "tag:Name", "Values": [identifier]}]
+            Filters=[
+                {"Name": "tag:Name", "Values": [identifier]},
+                {"Name": "instance-state-name", "Values": _ACTIONABLE_STATES},
+            ]
         )
         for reservation in response["Reservations"]:
             for instance in reservation["Instances"]:
