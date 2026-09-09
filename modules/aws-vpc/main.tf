@@ -306,7 +306,15 @@ resource "aws_instance" "nat" {
   user_data                   = <<-EOF
     #!/bin/bash
     set -xe
-    dnf install -y iptables
+    # temporary swap so dnf survives on 512MB
+    fallocate -l 1G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    dnf install -y --setopt=install_weak_deps=False iptables
+    swapoff /swapfile
+    rm -f /swapfile
+
     echo "net.ipv4.ip_forward=1" | tee /etc/sysctl.d/99-nat.conf
     sysctl -p /etc/sysctl.d/99-nat.conf
     ETH=$(ip route show default | awk '{print $5}')
