@@ -27,6 +27,16 @@ Behavior:
 - Each resource type is only touched if its corresponding input list is non-empty; the
   IAM policy is scoped to match — e.g. no RDS permissions are granted if neither
   `rds_cluster_ids` nor `rds_instance_ids` is set.
+- **Idempotent.** Every resource's current state is checked before acting. If it is
+  already in the requested end state (NAT instance `running`/`stopped`, RDS/Aurora
+  `available`/`stopped`, ECS service already at the target desired count and stable),
+  no start/stop/update call is made — the summary entry carries `"skipped"` with the
+  reason and the run continues to the next resource. A resource already transitioning
+  the right way (e.g. RDS `starting`, `backing-up`) is not re-issued the call either;
+  `up` still waits for it to become `available`, `down` records the current status and
+  moves on. This makes re-running `up` on an already-up environment (or `down` on an
+  already-down one) a clean no-op instead of an `InvalidDBInstanceState` /
+  `IncorrectInstanceState` error.
 - Every start/stop waits (bounded `boto3` waiter) for the resource to reach a ready
   state before moving to the next tier, budgeted to fit inside `var.timeout` — except
   Aurora cluster stop, which returns as soon as `stop_db_cluster` is accepted (see
