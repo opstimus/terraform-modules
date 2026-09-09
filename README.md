@@ -80,7 +80,7 @@ don't edit the table by hand.
 | `aws-sqs` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-sqs/v2.0.0) |
 | `aws-target-group` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-target-group/v2.0.0) |
 | `aws-task-definition` | [v2.1.0](https://github.com/opstimus/terraform-modules/tree/aws-task-definition/v2.1.0) |
-| `aws-vpc` | [v2.2.2](https://github.com/opstimus/terraform-modules/tree/aws-vpc/v2.2.2) |
+| `aws-vpc` | [v2.2.3](https://github.com/opstimus/terraform-modules/tree/aws-vpc/v2.2.3) |
 | `mongodb-advance` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/mongodb-advance/v1.0.0) |
 | `oci-backend-set` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/oci-backend-set/v1.0.0) |
 | `oci-container-instances` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/oci-container-instances/v1.0.0) |
