@@ -169,7 +169,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   alarm_actions             = [var.alarm_sns_arn]
   ok_actions                = [var.alarm_sns_arn]
   dimensions = {
-    DBInstanceIdentifier = aws_rds_cluster.main.id
+    DBClusterIdentifier = aws_rds_cluster.main.cluster_identifier
   }
   tags = var.tags
 }
@@ -190,7 +190,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_critical" {
   alarm_actions             = [var.alarm_sns_arn]
   ok_actions                = [var.alarm_sns_arn]
   dimensions = {
-    DBInstanceIdentifier = aws_rds_cluster.main.id
+    DBClusterIdentifier = aws_rds_cluster.main.cluster_identifier
   }
   tags = var.tags
 }
