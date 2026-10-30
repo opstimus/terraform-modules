@@ -10,7 +10,7 @@ variable "environment" {
 
 variable "name" {
   type        = string
-  default     = "resource-scheduler"
+  default     = "resource-hibernator"
   description = "Function/role name suffix"
 }
 

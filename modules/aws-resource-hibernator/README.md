@@ -1,4 +1,4 @@
-# Resource Scheduler Module
+# Resource Hibernator Module
 
 ## Description
 
@@ -71,7 +71,7 @@ Behavior:
 |---------------------|------------------------------------------------------------------|----------------|-----------------------|:--------:|
 | project             | Project name                                                    | `string`       | `-`                   | yes      |
 | environment         | Environment name                                                 | `string`       | `-`                   | yes      |
-| name                | Function/role name suffix                                       | `string`       | `"resource-scheduler"`| no       |
+| name                | Function/role name suffix                                       | `string`       | `"resource-hibernator"`| no       |
 | nat_instance_ids    | EC2 instance IDs (`i-...`) or Name tags of NAT instances         | `list(string)` | `[]`                  | no       |
 | rds_cluster_ids     | Aurora/RDS cluster identifiers to start/stop                     | `list(string)` | `[]`                  | no       |
 | rds_instance_ids    | Standalone RDS instance identifiers to start/stop                | `list(string)` | `[]`                  | no       |
@@ -93,8 +93,8 @@ Behavior:
 ## Usage example
 
 ```hcl
-module "resource_scheduler" {
-  source      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-resource-scheduler?ref=aws-resource-scheduler/v<RELEASE>"
+module "resource_hibernator" {
+  source      = "git::https://github.com/opstimus/terraform-modules.git//modules/aws-resource-hibernator?ref=aws-resource-hibernator/v<RELEASE>"
   project     = "my-project"
   environment = "dev"
 
