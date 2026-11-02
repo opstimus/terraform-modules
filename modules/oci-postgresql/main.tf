@@ -68,7 +68,7 @@ resource "oci_psql_db_system" "main" {
     password_details {
       password_type  = "VAULT_SECRET"
       secret_id      = oci_vault_secret.main.id
-      secret_version = 1
+      secret_version = tostring(oci_vault_secret.main.current_version_number)
     }
     username = var.db_username
   }
