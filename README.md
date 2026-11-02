@@ -53,7 +53,7 @@ don't edit the table by hand.
 | `aws-alb` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-alb/v2.0.0) |
 | `aws-api-gateway` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-api-gateway/v2.0.0) |
 | `aws-aurora-dsql` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/aws-aurora-dsql/v1.0.0) |
-| `aws-aurora` | [v2.1.0](https://github.com/opstimus/terraform-modules/tree/aws-aurora/v2.1.0) |
+| `aws-aurora` | [v2.1.1](https://github.com/opstimus/terraform-modules/tree/aws-aurora/v2.1.1) |
 | `aws-dynamodb` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-dynamodb/v2.0.0) |
 | `aws-ec2-instance` | [v2.0.1](https://github.com/opstimus/terraform-modules/tree/aws-ec2-instance/v2.0.1) |
 | `aws-ecr` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/aws-ecr/v2.0.0) |
