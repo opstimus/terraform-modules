@@ -88,7 +88,7 @@ don't edit the table by hand.
 | `oci-kms-key` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/oci-kms-key/v1.0.0) |
 | `oci-kms-vault` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/oci-kms-vault/v1.0.0) |
 | `oci-lb` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/oci-lb/v1.0.0) |
-| `oci-postgresql` | [v1.0.1](https://github.com/opstimus/terraform-modules/tree/oci-postgresql/v1.0.1) |
+| `oci-postgresql` | [v1.0.2](https://github.com/opstimus/terraform-modules/tree/oci-postgresql/v1.0.2) |
 | `oci-redis` | [v1.0.0](https://github.com/opstimus/terraform-modules/tree/oci-redis/v1.0.0) |
 | `oci-vcn` | [v1.0.1](https://github.com/opstimus/terraform-modules/tree/oci-vcn/v1.0.1) |
 | `postgresql` | [v2.0.0](https://github.com/opstimus/terraform-modules/tree/postgresql/v2.0.0) |
