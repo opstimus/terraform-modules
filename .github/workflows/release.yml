@@ -23,6 +23,7 @@ on:
           - aws-ecs-service
           - aws-ecs-task
           - aws-efs
+          - aws-egress-monitor
           - aws-elasticache-redis
           - aws-github-runner
           - aws-iam-role
