@@ -11,6 +11,7 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 | terraform  | >= 1.4.0 |
 | aws        | >= 6.0   |
 | external | >= 2.2.0 |
+| archive  | >= 2.0   |
 
 ## Providers
 
@@ -18,6 +19,7 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 |------|---------|
 | aws  | >= 6.0  |
 | external | >= 2.2.0 |
+| archive  | >= 2.0   |
 
 ## Inputs
 
@@ -35,7 +37,9 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 | private_cidr_2     | Private subnet CIDR block | `string` | -           | yes      |
 | private_cidr_3     | Private subnet CIDR block | `string` | -           | yes      |
 | enable_nat_alarms  | Create status check alarms for NAT instances (system failures also trigger EC2 auto-recover) | `bool` | `false` | no       |
-| alarm_sns_arn      | SNS topic arn for NAT alarms | `string` | `""` | no       |
+| alarm_sns_arn      | SNS topic arn for NAT and egress alarms | `string` | `""` | no       |
+| enable_egress_monitor | Check every 5 minutes that each private subnet can reach the internet | `bool` | `false` | no       |
+| egress_probe_url   | URL the egress probes fetch | `string` | `"https://checkip.amazonaws.com"` | no       |
 | enable_ssm_vpc_endpoints | Create VPC interface endpoint for SSM in private subnets | `bool` | `false` | no       |
 | enable_isolated_subnets | Create isolated private subnets with no outbound internet access | `bool` | `false` | no       |
 | isolated_cidr_1        | Isolated subnet CIDR for AZ 1. Required when enable_isolated_subnets is true | `string` | `null` | no       |
@@ -104,3 +108,4 @@ module "vpc" {
 - NAT instances use the latest AL2023 AMI and are replaced create-before-destroy: the EIP and route move only once the new NAT tags itself `NatReady=true`, so egress drops for seconds. Requires the AWS CLI wherever Terraform runs.
 - Isolated subnets have **no outbound internet access** — their route tables contain no default route. They can only communicate within the VPC. Use them for resources that must never reach the internet (e.g. databases, internal services).
 - `isolated_cidr_1/2/3` are required when `enable_isolated_subnets = true`.
+- `enable_egress_monitor` runs a probe Lambda in each private subnet every 5 minutes and alarms per AZ when 2 of the last 3 checks fail. Don't enable it where NATs are stopped on purpose (e.g. hibernated environments).

@@ -432,6 +432,13 @@ resource "aws_cloudwatch_metric_alarm" "nat_system_status" {
     InstanceId = aws_instance.nat[count.index].id
   }
   tags = var.tags
+
+  lifecycle {
+    precondition {
+      condition     = var.alarm_sns_arn != ""
+      error_message = "alarm_sns_arn is required when enable_nat_alarms is true."
+    }
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "nat_instance_status" {
@@ -451,6 +458,13 @@ resource "aws_cloudwatch_metric_alarm" "nat_instance_status" {
     InstanceId = aws_instance.nat[count.index].id
   }
   tags = var.tags
+
+  lifecycle {
+    precondition {
+      condition     = var.alarm_sns_arn != ""
+      error_message = "alarm_sns_arn is required when enable_nat_alarms is true."
+    }
+  }
 }
 
 resource "aws_nat_gateway" "gateway_1" {
@@ -699,3 +713,161 @@ resource "aws_vpc_endpoint" "ssm" {
   )
 }
 
+
+#############################################################################################
+# Egress monitor: one probe Lambda per private subnet (and so per AZ) fetches
+# egress_probe_url every 5 minutes; a per-subnet alarm fires when checks keep failing
+#############################################################################################
+locals {
+  egress_probe_name    = "${var.project}-${var.environment}-egress-probe"
+  egress_probe_subnets = [aws_subnet.private_1, aws_subnet.private_2, aws_subnet.private_3]
+}
+
+data "archive_file" "egress_probe" {
+  count       = var.enable_egress_monitor ? 1 : 0
+  type        = "zip"
+  source_file = "${path.module}/egress_probe.py"
+  output_path = "/tmp/${local.egress_probe_name}.zip"
+}
+
+resource "aws_security_group" "egress_probe" {
+  count       = var.enable_egress_monitor ? 1 : 0
+  name        = local.egress_probe_name
+  description = local.egress_probe_name
+  vpc_id      = aws_vpc.main.id
+
+  tags = merge(
+    {
+      Name = local.egress_probe_name
+    },
+    var.tags
+  )
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_probe_https" {
+  count             = var.enable_egress_monitor ? 1 : 0
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = "0.0.0.0/0"
+  security_group_id = aws_security_group.egress_probe[0].id
+
+  tags = merge(
+    {
+      Name = "${local.egress_probe_name}-https"
+    },
+    var.tags
+  )
+}
+
+resource "aws_iam_role" "egress_probe" {
+  count = var.enable_egress_monitor ? 1 : 0
+  name  = local.egress_probe_name
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = { Service = "lambda.amazonaws.com" }
+      },
+    ]
+  })
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "egress_probe_vpc_access" {
+  count      = var.enable_egress_monitor ? 1 : 0
+  role       = aws_iam_role.egress_probe[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+resource "aws_cloudwatch_log_group" "egress_probe" {
+  count             = var.enable_egress_monitor ? 3 : 0
+  name              = "/aws/lambda/${local.egress_probe_name}-${local.egress_probe_subnets[count.index].availability_zone}"
+  retention_in_days = 14
+  tags              = var.tags
+}
+
+# One function per subnet: a function attached to several subnets would only
+# test whichever one Lambda happens to pick
+resource "aws_lambda_function" "egress_probe" {
+  count            = var.enable_egress_monitor ? 3 : 0
+  function_name    = "${local.egress_probe_name}-${local.egress_probe_subnets[count.index].availability_zone}"
+  role             = aws_iam_role.egress_probe[0].arn
+  filename         = data.archive_file.egress_probe[0].output_path
+  source_code_hash = data.archive_file.egress_probe[0].output_base64sha256
+  handler          = "egress_probe.lambda_handler"
+  runtime          = "python3.13"
+  timeout          = 20
+  memory_size      = 128
+  tags             = var.tags
+
+  vpc_config {
+    subnet_ids         = [local.egress_probe_subnets[count.index].id]
+    security_group_ids = [aws_security_group.egress_probe[0].id]
+  }
+
+  environment {
+    variables = {
+      PROBE_URL = var.egress_probe_url
+    }
+  }
+
+  depends_on = [
+    aws_cloudwatch_log_group.egress_probe,
+    aws_iam_role_policy_attachment.egress_probe_vpc_access,
+  ]
+}
+
+resource "aws_cloudwatch_event_rule" "egress_probe" {
+  count               = var.enable_egress_monitor ? 1 : 0
+  name                = local.egress_probe_name
+  description         = "Run the egress probes"
+  schedule_expression = "rate(5 minutes)"
+  tags                = var.tags
+}
+
+resource "aws_cloudwatch_event_target" "egress_probe" {
+  count = var.enable_egress_monitor ? 3 : 0
+  rule  = aws_cloudwatch_event_rule.egress_probe[0].name
+  arn   = aws_lambda_function.egress_probe[count.index].arn
+}
+
+resource "aws_lambda_permission" "egress_probe" {
+  count         = var.enable_egress_monitor ? 3 : 0
+  statement_id  = "AllowEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.egress_probe[count.index].function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.egress_probe[0].arn
+}
+
+# Lambda publishes Errors itself, so the alarm still gets data when egress is down
+resource "aws_cloudwatch_metric_alarm" "egress" {
+  count               = var.enable_egress_monitor ? 3 : 0
+  alarm_name          = "${var.project}-${var.environment}: Egress check failing in ${local.egress_probe_subnets[count.index].availability_zone}"
+  alarm_description   = "Private subnet ${local.egress_probe_subnets[count.index].id} cannot reach ${var.egress_probe_url}"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 3
+  datapoints_to_alarm = 2
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 1
+  treat_missing_data  = "missing"
+  alarm_actions       = [var.alarm_sns_arn]
+  ok_actions          = [var.alarm_sns_arn]
+  dimensions = {
+    FunctionName = aws_lambda_function.egress_probe[count.index].function_name
+  }
+  tags = var.tags
+
+  lifecycle {
+    precondition {
+      condition     = var.alarm_sns_arn != ""
+      error_message = "alarm_sns_arn is required when enable_egress_monitor is true."
+    }
+  }
+}
