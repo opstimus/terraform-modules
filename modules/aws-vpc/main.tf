@@ -511,6 +511,9 @@ resource "aws_route" "private_1" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_1[0].id : null
   network_interface_id   = var.nat == "instance" ? terraform_data.nat_ready[0].output.network_interface_id : null
+
+  # Switch right after the EIP moves, so egress leaves from a temporary public IP for seconds at most
+  depends_on = [aws_eip_association.nat_instance]
 }
 
 resource "aws_route" "private_2" {
@@ -518,6 +521,8 @@ resource "aws_route" "private_2" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_2[0].id : null
   network_interface_id   = var.nat == "instance" ? terraform_data.nat_ready[1].output.network_interface_id : null
+
+  depends_on = [aws_eip_association.nat_instance]
 }
 
 resource "aws_route" "private_3" {
@@ -525,6 +530,8 @@ resource "aws_route" "private_3" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_3[0].id : null
   network_interface_id   = var.nat == "instance" ? terraform_data.nat_ready[2].output.network_interface_id : null
+
+  depends_on = [aws_eip_association.nat_instance]
 }
 
 resource "aws_eip" "nat_1" {
