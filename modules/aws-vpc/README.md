@@ -101,6 +101,6 @@ module "vpc" {
 ## Notes
 
 - The `nat` variable controls whether to use an EC2 instance or a NAT gateway for internet access in private subnets.
-- NAT instances run the latest Amazon Linux 2023 AMI, so a new AMI release replaces them on the next apply. Replacement is create-before-destroy: each new NAT tags itself `NatReady=true` once forwarding is configured, and Terraform waits for that tag before moving the Elastic IP and private route to it. Egress is interrupted only for the few seconds of the switchover. This wait runs the AWS CLI, so `aws` must be available (with the same credentials) wherever Terraform runs. If the tag doesn't appear within 10 minutes, the apply fails and traffic stays on the old NAT.
+- NAT instances use the latest AL2023 AMI and are replaced create-before-destroy: the EIP and route move only once the new NAT tags itself `NatReady=true`, so egress drops for seconds. Requires the AWS CLI wherever Terraform runs.
 - Isolated subnets have **no outbound internet access** — their route tables contain no default route. They can only communicate within the VPC. Use them for resources that must never reach the internet (e.g. databases, internal services).
 - `isolated_cidr_1/2/3` are required when `enable_isolated_subnets = true`.
