@@ -77,6 +77,18 @@ variable "isolated_cidr_3" {
   default     = null
 }
 
+variable "enable_nat_alarms" {
+  type        = bool
+  description = "Create status check alarms for NAT instances (system failures also trigger EC2 auto-recover)."
+  default     = false
+}
+
+variable "alarm_sns_arn" {
+  type        = string
+  description = "SNS topic arn"
+  default     = ""
+}
+
 variable "enable_ssm_vpc_endpoints" {
   type        = bool
   description = "Create VPC interface endpoint for SSM in private subnets."
