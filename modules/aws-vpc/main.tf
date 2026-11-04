@@ -806,7 +806,7 @@ resource "aws_lambda_function" "egress_probe" {
   source_code_hash = data.archive_file.egress_probe[0].output_base64sha256
   handler          = "egress_probe.lambda_handler"
   runtime          = "python3.13"
-  timeout          = 20
+  timeout          = 10 # the probe's only timeout: no response within 10s counts as a failed check
   memory_size      = 128
   tags             = var.tags
 
