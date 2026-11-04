@@ -820,6 +820,13 @@ resource "aws_lambda_function" "egress_probe" {
   ]
 }
 
+# No async retries, so each scheduled check is exactly one invocation for the alarm to count
+resource "aws_lambda_function_event_invoke_config" "egress_probe" {
+  count                  = var.enable_nat_alarms ? 3 : 0
+  function_name          = aws_lambda_function.egress_probe[count.index].function_name
+  maximum_retry_attempts = 0
+}
+
 resource "aws_cloudwatch_event_rule" "egress_probe" {
   count               = var.enable_nat_alarms ? 1 : 0
   name                = local.egress_probe_name
@@ -854,7 +861,7 @@ resource "aws_cloudwatch_metric_alarm" "egress" {
   metric_name         = "Errors"
   namespace           = "AWS/Lambda"
   period              = 300
-  statistic           = "Maximum"
+  statistic           = "Sum"
   threshold           = 1
   treat_missing_data  = "missing"
   alarm_actions       = [var.alarm_sns_arn]
