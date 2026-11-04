@@ -276,6 +276,31 @@ resource "aws_iam_role_policy" "nat_instance_ssm" {
   })
 }
 
+resource "aws_iam_role_policy" "nat_instance_ready_tag" {
+  count = var.nat == "instance" ? 1 : 0
+
+  name = "${var.project}-${var.environment}-nat-instance-ready-tag"
+  role = aws_iam_role.nat_instance[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "ec2:CreateTags"
+        Resource = "arn:aws:ec2:*:*:instance/*"
+        Condition = {
+          StringEquals = {
+            "aws:ARN" = "$${ec2:SourceInstanceARN}"
+          }
+          "ForAllValues:StringEquals" = {
+            "aws:TagKeys" = ["NatReady"]
+          }
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_iam_instance_profile" "nat_instance" {
   count = var.nat == "instance" ? 1 : 0
 
@@ -324,6 +349,15 @@ resource "aws_instance" "nat" {
     printf '[Unit]\nDescription=Restore iptables NAT rules\nAfter=network.target\n\n[Service]\nType=oneshot\nExecStart=/sbin/iptables-restore /etc/iptables/rules.v4\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target\n' > /etc/systemd/system/iptables-restore.service
     systemctl daemon-reload
     systemctl enable iptables-restore.service
+
+    # Signal readiness so Terraform moves the EIP and private route only now
+    TOKEN=$(curl -sX PUT http://169.254.169.254/latest/api/token -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
+    ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+    REGION=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
+    for i in $(seq 1 30); do
+      aws ec2 create-tags --region "$REGION" --resources "$ID" --tags Key=NatReady,Value=true && break
+      sleep 10
+    done
   EOF
 
   metadata_options {
@@ -337,6 +371,86 @@ resource "aws_instance" "nat" {
     },
     var.tags
   )
+
+  # Replacements (e.g. a new AMI) bring the new NAT up before the old one goes
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [aws_iam_role_policy.nat_instance_ready_tag]
+}
+
+# Waits for the new NAT's readiness tag, so the EIP and private route switch
+# over only once it is forwarding. On timeout the apply fails and traffic
+# stays on the old NAT.
+resource "terraform_data" "nat_ready" {
+  count            = var.nat == "instance" ? 3 : 0
+  triggers_replace = aws_instance.nat[count.index].id
+  input = {
+    instance_id          = aws_instance.nat[count.index].id
+    network_interface_id = aws_instance.nat[count.index].primary_network_interface_id
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command     = <<-EOT
+      set -euo pipefail
+      for i in $(seq 1 60); do
+        READY=$(aws ec2 describe-tags --region "${data.aws_region.current.region}" \
+          --filters "Name=resource-id,Values=${self.input.instance_id}" "Name=key,Values=NatReady" \
+          --query 'length(Tags)' --output text)
+        if [ "$READY" = "1" ]; then
+          echo "NAT ${self.input.instance_id} is ready"
+          exit 0
+        fi
+        sleep 10
+      done
+      echo "Timed out waiting for NAT ${self.input.instance_id} to become ready" >&2
+      exit 1
+    EOT
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "nat_system_status" {
+  count               = var.nat == "instance" && var.enable_nat_alarms ? 3 : 0
+  alarm_name          = "${var.project}-${var.environment}: NAT instance ${count.index + 1} system status check failed"
+  alarm_description   = "NAT instance system status check failed; EC2 auto-recover triggered"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "StatusCheckFailed_System"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = 1
+  alarm_actions       = [var.alarm_sns_arn, "arn:aws:automate:${data.aws_region.current.region}:ec2:recover"]
+  ok_actions          = [var.alarm_sns_arn]
+  dimensions = {
+    InstanceId = aws_instance.nat[count.index].id
+  }
+  tags = var.tags
+}
+
+resource "aws_cloudwatch_metric_alarm" "nat_instance_status" {
+  count               = var.nat == "instance" && var.enable_nat_alarms ? 3 : 0
+  alarm_name          = "${var.project}-${var.environment}: NAT instance ${count.index + 1} instance status check failed"
+  alarm_description   = "NAT instance status check failed"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "StatusCheckFailed_Instance"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = 1
+  alarm_actions       = [var.alarm_sns_arn]
+  ok_actions          = [var.alarm_sns_arn]
+  dimensions = {
+    InstanceId = aws_instance.nat[count.index].id
+  }
+  tags = var.tags
 }
 
 resource "aws_nat_gateway" "gateway_1" {
@@ -382,21 +496,21 @@ resource "aws_route" "private_1" {
   route_table_id         = aws_route_table.private_1.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_1[0].id : null
-  network_interface_id   = var.nat == "instance" ? aws_instance.nat[0].primary_network_interface_id : null
+  network_interface_id   = var.nat == "instance" ? terraform_data.nat_ready[0].output.network_interface_id : null
 }
 
 resource "aws_route" "private_2" {
   route_table_id         = aws_route_table.private_2.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_2[0].id : null
-  network_interface_id   = var.nat == "instance" ? aws_instance.nat[1].primary_network_interface_id : null
+  network_interface_id   = var.nat == "instance" ? terraform_data.nat_ready[1].output.network_interface_id : null
 }
 
 resource "aws_route" "private_3" {
   route_table_id         = aws_route_table.private_3.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = var.nat == "gateway" ? aws_nat_gateway.gateway_3[0].id : null
-  network_interface_id   = var.nat == "instance" ? aws_instance.nat[2].primary_network_interface_id : null
+  network_interface_id   = var.nat == "instance" ? terraform_data.nat_ready[2].output.network_interface_id : null
 }
 
 resource "aws_eip" "nat_1" {
@@ -437,8 +551,12 @@ resource "aws_eip" "nat_3" {
 
 resource "aws_eip_association" "nat_instance" {
   count         = var.nat == "instance" ? 3 : 0
-  instance_id   = aws_instance.nat[count.index].id
+  instance_id   = terraform_data.nat_ready[count.index].output.instance_id
   allocation_id = [aws_eip.nat_1.id, aws_eip.nat_2.id, aws_eip.nat_3.id][count.index]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Isolated subnets (no outbound internet access)

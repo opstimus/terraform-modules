@@ -8,7 +8,7 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 
 | Name       | Version  |
 |------------|----------|
-| terraform  | >= 1.3.0 |
+| terraform  | >= 1.4.0 |
 | aws        | >= 6.0   |
 | external | >= 2.2.0 |
 
@@ -34,6 +34,8 @@ This Terraform module creates a Virtual Private Cloud (VPC) along with associate
 | private_cidr_1     | Private subnet CIDR block | `string` | -           | yes      |
 | private_cidr_2     | Private subnet CIDR block | `string` | -           | yes      |
 | private_cidr_3     | Private subnet CIDR block | `string` | -           | yes      |
+| enable_nat_alarms  | Create status check alarms for NAT instances (system failures also trigger EC2 auto-recover) | `bool` | `false` | no       |
+| alarm_sns_arn      | SNS topic arn for NAT alarms | `string` | `""` | no       |
 | enable_ssm_vpc_endpoints | Create VPC interface endpoint for SSM in private subnets | `bool` | `false` | no       |
 | enable_isolated_subnets | Create isolated private subnets with no outbound internet access | `bool` | `false` | no       |
 | isolated_cidr_1        | Isolated subnet CIDR for AZ 1. Required when enable_isolated_subnets is true | `string` | `null` | no       |
@@ -99,5 +101,6 @@ module "vpc" {
 ## Notes
 
 - The `nat` variable controls whether to use an EC2 instance or a NAT gateway for internet access in private subnets.
+- NAT instances run the latest Amazon Linux 2023 AMI, so a new AMI release replaces them on the next apply. Replacement is create-before-destroy: each new NAT tags itself `NatReady=true` once forwarding is configured, and Terraform waits for that tag before moving the Elastic IP and private route to it. Egress is interrupted only for the few seconds of the switchover. This wait runs the AWS CLI, so `aws` must be available (with the same credentials) wherever Terraform runs. If the tag doesn't appear within 10 minutes, the apply fails and traffic stays on the old NAT.
 - Isolated subnets have **no outbound internet access** — their route tables contain no default route. They can only communicate within the VPC. Use them for resources that must never reach the internet (e.g. databases, internal services).
 - `isolated_cidr_1/2/3` are required when `enable_isolated_subnets = true`.
