@@ -79,7 +79,7 @@ variable "isolated_cidr_3" {
 
 variable "enable_nat_alarms" {
   type        = bool
-  description = "Create status check alarms for NAT instances (system failures also trigger EC2 auto-recover)."
+  description = "Create NAT alarms: status checks for NAT instances (system failures also trigger EC2 auto-recover) and a per-AZ egress probe. Keep off where NATs are stopped on purpose."
   default     = false
 }
 
@@ -87,12 +87,6 @@ variable "alarm_sns_arn" {
   type        = string
   description = "SNS topic arn"
   default     = ""
-}
-
-variable "enable_egress_monitor" {
-  type        = bool
-  description = "Check every 5 minutes that each private subnet can reach the internet, and alarm when it can't."
-  default     = false
 }
 
 variable "egress_probe_url" {

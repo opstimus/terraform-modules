@@ -724,14 +724,14 @@ locals {
 }
 
 data "archive_file" "egress_probe" {
-  count       = var.enable_egress_monitor ? 1 : 0
+  count       = var.enable_nat_alarms ? 1 : 0
   type        = "zip"
   source_file = "${path.module}/egress_probe.py"
   output_path = "/tmp/${local.egress_probe_name}.zip"
 }
 
 resource "aws_security_group" "egress_probe" {
-  count       = var.enable_egress_monitor ? 1 : 0
+  count       = var.enable_nat_alarms ? 1 : 0
   name        = local.egress_probe_name
   description = local.egress_probe_name
   vpc_id      = aws_vpc.main.id
@@ -745,7 +745,7 @@ resource "aws_security_group" "egress_probe" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "egress_probe_https" {
-  count             = var.enable_egress_monitor ? 1 : 0
+  count             = var.enable_nat_alarms ? 1 : 0
   ip_protocol       = "tcp"
   from_port         = 443
   to_port           = 443
@@ -761,7 +761,7 @@ resource "aws_vpc_security_group_egress_rule" "egress_probe_https" {
 }
 
 resource "aws_iam_role" "egress_probe" {
-  count = var.enable_egress_monitor ? 1 : 0
+  count = var.enable_nat_alarms ? 1 : 0
   name  = local.egress_probe_name
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -777,13 +777,13 @@ resource "aws_iam_role" "egress_probe" {
 }
 
 resource "aws_iam_role_policy_attachment" "egress_probe_vpc_access" {
-  count      = var.enable_egress_monitor ? 1 : 0
+  count      = var.enable_nat_alarms ? 1 : 0
   role       = aws_iam_role.egress_probe[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_cloudwatch_log_group" "egress_probe" {
-  count             = var.enable_egress_monitor ? 3 : 0
+  count             = var.enable_nat_alarms ? 3 : 0
   name              = "/aws/lambda/${local.egress_probe_name}-${local.egress_probe_subnets[count.index].availability_zone}"
   retention_in_days = 14
   tags              = var.tags
@@ -792,7 +792,7 @@ resource "aws_cloudwatch_log_group" "egress_probe" {
 # One function per subnet: a function attached to several subnets would only
 # test whichever one Lambda happens to pick
 resource "aws_lambda_function" "egress_probe" {
-  count            = var.enable_egress_monitor ? 3 : 0
+  count            = var.enable_nat_alarms ? 3 : 0
   function_name    = "${local.egress_probe_name}-${local.egress_probe_subnets[count.index].availability_zone}"
   role             = aws_iam_role.egress_probe[0].arn
   filename         = data.archive_file.egress_probe[0].output_path
@@ -821,7 +821,7 @@ resource "aws_lambda_function" "egress_probe" {
 }
 
 resource "aws_cloudwatch_event_rule" "egress_probe" {
-  count               = var.enable_egress_monitor ? 1 : 0
+  count               = var.enable_nat_alarms ? 1 : 0
   name                = local.egress_probe_name
   description         = "Run the egress probes"
   schedule_expression = "rate(5 minutes)"
@@ -829,13 +829,13 @@ resource "aws_cloudwatch_event_rule" "egress_probe" {
 }
 
 resource "aws_cloudwatch_event_target" "egress_probe" {
-  count = var.enable_egress_monitor ? 3 : 0
+  count = var.enable_nat_alarms ? 3 : 0
   rule  = aws_cloudwatch_event_rule.egress_probe[0].name
   arn   = aws_lambda_function.egress_probe[count.index].arn
 }
 
 resource "aws_lambda_permission" "egress_probe" {
-  count         = var.enable_egress_monitor ? 3 : 0
+  count         = var.enable_nat_alarms ? 3 : 0
   statement_id  = "AllowEventBridge"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.egress_probe[count.index].function_name
@@ -845,7 +845,7 @@ resource "aws_lambda_permission" "egress_probe" {
 
 # Lambda publishes Errors itself, so the alarm still gets data when egress is down
 resource "aws_cloudwatch_metric_alarm" "egress" {
-  count               = var.enable_egress_monitor ? 3 : 0
+  count               = var.enable_nat_alarms ? 3 : 0
   alarm_name          = "${var.project}-${var.environment}: Egress check failing in ${local.egress_probe_subnets[count.index].availability_zone}"
   alarm_description   = "Private subnet ${local.egress_probe_subnets[count.index].id} cannot reach ${var.egress_probe_url}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -867,7 +867,7 @@ resource "aws_cloudwatch_metric_alarm" "egress" {
   lifecycle {
     precondition {
       condition     = var.alarm_sns_arn != ""
-      error_message = "alarm_sns_arn is required when enable_egress_monitor is true."
+      error_message = "alarm_sns_arn is required when enable_nat_alarms is true."
     }
   }
 }
