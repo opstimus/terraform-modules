@@ -89,6 +89,18 @@ variable "alarm_sns_arn" {
   default     = ""
 }
 
+variable "enable_egress_monitor" {
+  type        = bool
+  description = "Check every 5 minutes that each private subnet can reach the internet, and alarm when it can't."
+  default     = false
+}
+
+variable "egress_probe_url" {
+  type        = string
+  description = "URL the egress probes fetch"
+  default     = "https://checkip.amazonaws.com"
+}
+
 variable "enable_ssm_vpc_endpoints" {
   type        = bool
   description = "Create VPC interface endpoint for SSM in private subnets."
