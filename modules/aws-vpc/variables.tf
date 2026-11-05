@@ -79,7 +79,7 @@ variable "isolated_cidr_3" {
 
 variable "enable_nat_alarms" {
   type        = bool
-  description = "Create status check alarms for NAT instances (system failures also trigger EC2 auto-recover)."
+  description = "Create alarms for NAT instances: status checks (system failures also trigger EC2 auto-recover) and a per-AZ egress probe. Keep off where NATs are stopped on purpose."
   default     = false
 }
 
@@ -87,6 +87,12 @@ variable "alarm_sns_arn" {
   type        = string
   description = "SNS topic arn"
   default     = ""
+}
+
+variable "egress_probe_url" {
+  type        = string
+  description = "URL the egress probes fetch"
+  default     = "https://checkip.amazonaws.com"
 }
 
 variable "enable_ssm_vpc_endpoints" {
