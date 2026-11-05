@@ -79,7 +79,7 @@ variable "isolated_cidr_3" {
 
 variable "enable_nat_alarms" {
   type        = bool
-  description = "Create NAT alarms: status checks for NAT instances (system failures also trigger EC2 auto-recover) and a per-AZ egress probe. Keep off where NATs are stopped on purpose."
+  description = "Create alarms for NAT instances: status checks (system failures also trigger EC2 auto-recover) and a per-AZ egress probe. Keep off where NATs are stopped on purpose."
   default     = false
 }
 
